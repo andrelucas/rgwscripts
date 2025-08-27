@@ -1,0 +1,44 @@
+# Example test for the HTTP engine's S3 support against Amazon AWS.
+# Obviously, you have to adjust the S3 credentials; for this example,
+# they're passed in via the environment.
+# For non-AWS S3 implementations, refer to your S3 vendor's region 
+# settings. Note that the region value appears twice, in http_host and 
+# http_s3_region.
+# This example uses virtual-hosted-style requests:
+# https://bucket-name.s3.region-code.amazonaws.com/k/e.y
+# For path-style, prefix the key with the bucket name in the filename
+# so that filename=/bucket-name/k/e.y:
+# https://s3.region-code.amazonaws.com/bucket-name/k/e.y
+
+# Reference for Virtual-hosted-style vs. Path-style URLs:
+# https://docs.aws.amazon.com/AmazonS3/latest/userguide/VirtualHosting.html
+
+[global]
+ioengine=http
+name=test
+direct=1
+filename=/fio
+http_verbose=1
+https=off
+http_mode=s3
+http_s3_key=h7GhxuBLTrlhVUyxSPUKUV8r/2EI4ngqJxD7iBdBYLhwluN30JaT3Q==
+http_s3_keyid=0555b35654ad1656d804
+http_host=test.ludwig-fe01.home.ae-35.com:8000
+http_s3_region=us-east-1
+group_reporting
+
+# With verify, this both writes and reads the object
+[create]
+rw=write
+bs=4k
+size=64k
+io_size=4k
+verify=sha256
+
+[trim]
+stonewall
+rw=trim
+bs=4k
+size=64k
+io_size=4k
+

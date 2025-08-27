@@ -1,0 +1,16 @@
+diff --git a/cmake/modules/BuildBoost.cmake b/cmake/modules/BuildBoost.cmake
+index bd9497f1c09..3355b7710b6 100644
+--- a/cmake/modules/BuildBoost.cmake
++++ b/cmake/modules/BuildBoost.cmake
+@@ -160,9 +160,9 @@ function(do_build_boost root_dir version)
+       https://boostorg.jfrog.io/artifactory/main/release/${boost_version}/source/boost_${boost_version_underscore}.tar.bz2)
+     if(CMAKE_VERSION VERSION_GREATER 3.7)
+       set(boost_url
+-        "${boost_url} http://downloads.sourceforge.net/project/boost/boost/${boost_version}/boost_${boost_version_underscore}.tar.bz2")
++        "${boost_url};http://downloads.sourceforge.net/project/boost/boost/${boost_version}/boost_${boost_version_underscore}.tar.bz2")
+       set(boost_url
+-        "${boost_url} https://download.ceph.com/qa/boost_${boost_version_underscore}.tar.bz2")
++        "${boost_url};https://download.ceph.com/qa/boost_${boost_version_underscore}.tar.bz2")
+     endif()
+     set(source_dir
+       URL ${boost_url}

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<service>
+  <short>Jaeger All-in-One</short>
+  <description>Jaeger All-in-One Docker container</description>
+  <port port="5775" protocol="udp"/>
+  <port port="6831" protocol="udp"/>
+  <port port="6832" protocol="udp"/>
+  <port port="5778" protocol="tcp"/>
+  <port port="16686" protocol="tcp"/>
+  <port port="14268" protocol="tcp"/>
+  <port port="9411" protocol="tcp"/>
+</service>

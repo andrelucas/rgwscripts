@@ -1,0 +1,36 @@
+diff --git a/do_cmake.sh b/do_cmake.sh
+index 50274547fbf..f2c08e87423 100755
+--- a/do_cmake.sh
++++ b/do_cmake.sh
+@@ -66,16 +66,21 @@ if type ccache > /dev/null 2>&1 ; then
+     ARGS+=" -DWITH_CCACHE=ON"
+ fi
+ 
+-cxx_compiler="g++"
+-c_compiler="gcc"
+-# 20 is used for more future-proof
+-for i in $(seq 20 -1 11); do
+-  if type -t gcc-$i > /dev/null; then
+-    cxx_compiler="g++-$i"
+-    c_compiler="gcc-$i"
+-    break
+-  fi
+-done
++if [[ -z "$CXX" ]]; then
++  cxx_compiler="g++"
++  c_compiler="gcc"
++  # 20 is used for more future-proof
++  for i in $(seq 20 -1 11); do
++    if type -t gcc-$i > /dev/null; then
++      cxx_compiler="g++-$i"
++      c_compiler="gcc-$i"
++      break
++    fi
++  done
++else
++  cxx_compiler="$CXX"
++  c_compiler="$CC"
++fi
+ ARGS+=" -DCMAKE_CXX_COMPILER=$cxx_compiler"
+ ARGS+=" -DCMAKE_C_COMPILER=$c_compiler"
+ 

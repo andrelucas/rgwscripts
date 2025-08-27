@@ -1,0 +1,7 @@
+bigfile
+bigfile-chunk*
+bigrand*
+otel/collector-output.txt
+venv-*
+# Don't include the binary
+chunkupload/chunkupload

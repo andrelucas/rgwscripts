@@ -1,0 +1,617 @@
+2023-09-21T15:19:21.976+0000 7f478d2b3e40  0 rgw DBStore backend: Opened database(Redhat.db) successfully
+2023-09-21T15:19:21.976+0000 7f478d2b3e40 10 rgw DBStore backend: sqlite exec successfully processed for schema(PRAGMA foreign_keys=ON)
+2023-09-21T15:19:22.132+0000 7f478d2b3e40 10 rgw DBStore backend: sqlite exec successfully processed for schema(CREATE TABLE IF NOT EXISTS 'Redhat.user.table' (	      UserID TEXT NOT NULL UNIQUE,		      Tenant TEXT ,		      NS TEXT ,		      DisplayName TEXT ,       UserEmail TEXT ,	      AccessKeysID TEXT ,	      AccessKeysSecret TEXT ,	      AccessKeys BLOB ,	      SwiftKeys BLOB ,	      SubUsers BLOB ,		      Suspended INTEGER ,	      MaxBuckets INTEGER ,	      OpMask	INTEGER ,	      UserCaps BLOB ,		      Admin	INTEGER ,	      System INTEGER , 	      PlacementName TEXT , 	      PlacementStorageClass TEXT , 	      PlacementTags BLOB ,	      BucketQuota BLOB ,	      TempURLKeys BLOB ,	      UserQuota BLOB ,	      TYPE INTEGER ,		      MfaIDs BLOB ,	      AssumedRoleARN TEXT ,       UserAttrs   BLOB,         UserVersion   INTEGER,          UserVersionTag TEXT,            PRIMARY KEY (UserID) 
+);)
+2023-09-21T15:19:22.132+0000 7f478d2b3e40 20 rgw DBStore backend: CreateUserTable suceeded
+2023-09-21T15:19:22.196+0000 7f478d2b3e40 10 rgw DBStore backend: sqlite exec successfully processed for schema(CREATE TABLE IF NOT EXISTS 'Redhat.bucket.table' (       BucketName TEXT NOT NULL UNIQUE ,       Tenant TEXT,              Marker TEXT,              BucketID TEXT,            Size   INTEGER,           SizeRounded INTEGER,      CreationTime BLOB,        Count  INTEGER,           PlacementName TEXT , 	      PlacementStorageClass TEXT , 	      OwnerID TEXT NOT NULL,       Flags   INTEGER,             Zonegroup TEXT,               HasInstanceObj BOOLEAN,       Quota   BLOB,             RequesterPays BOOLEAN,        HasWebsite  BOOLEAN,          WebsiteConf BLOB,         SwiftVersioning BOOLEAN,       SwiftVerLocation TEXT,        MdsearchConfig  BLOB,         NewBucketInstanceID TEXT,      ObjectLock BLOB,       SyncPolicyInfoGroups BLOB,       BucketAttrs   BLOB,         BucketVersion   INTEGER,          BucketVersionTag TEXT,            Mtime   BLOB,         PRIMARY KEY (BucketName)       FOREIGN KEY (OwnerID)       REFERENCES 'Redhat.user.table' (UserID) ON DELETE CASCADE ON UPDATE CASCADE 
+);)
+2023-09-21T15:19:22.196+0000 7f478d2b3e40 20 rgw DBStore backend: CreateBucketTable suceeded 
+2023-09-21T15:19:22.236+0000 7f478d2b3e40 10 rgw DBStore backend: sqlite exec successfully processed for schema(CREATE TABLE IF NOT EXISTS '' (       QuotaID INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE ,       MaxSizeSoftThreshold INTEGER ,	      MaxObjsSoftThreshold INTEGER ,	      MaxSize	INTEGER ,		      MaxObjects INTEGER ,		      Enabled Boolean ,		      CheckOnRaw Boolean 
+);)
+2023-09-21T15:19:22.236+0000 7f478d2b3e40 20 rgw DBStore backend: CreateQuotaTable suceeded 
+2023-09-21T15:19:22.236+0000 7f478d2b3e40  0 rgw DBStore backend: DB successfully initialized - name:Redhat
+2023-09-21T15:19:22.240+0000 7f4787ded700 20 rgw DBStore backend: Successfully Prepared stmt for Op(PrepareInsertUser) schema(INSERT OR REPLACE INTO 'Redhat.user.table'	                          (UserID, Tenant, NS, DisplayName, UserEmail,                            AccessKeysID, AccessKeysSecret, AccessKeys, SwiftKeys,                           SubUsers, Suspended, MaxBuckets, OpMask, UserCaps, Admin,                            System, PlacementName, PlacementStorageClass, PlacementTags,                            BucketQuota, TempURLKeys, UserQuota, Type, MfaIDs, AssumedRoleARN,                            UserAttrs, UserVersion, UserVersionTag)                           VALUES (:user_id, :tenant, :ns, :display_name, :user_email, :access_keys_id, :access_keys_secret, :access_keys, :swift_keys, :subusers, :suspended, :max_buckets, :op_mask,                               :user_caps, :admin, :system, :placement_name, :placement_storage_class, :placement_tags, :bucket_quota, :temp_url_keys, :user_quota, :type, :mfa_ids, :assumed_role_arn, :user_attrs, :user_vers, :user_ver_tag);) stmt(0x7f4778003af8)
+2023-09-21T15:19:22.240+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:tenant) in stmt(0x7f4778003af8) is 2
+2023-09-21T15:19:22.240+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:user_id) in stmt(0x7f4778003af8) is 1
+2023-09-21T15:19:22.240+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:ns) in stmt(0x7f4778003af8) is 3
+2023-09-21T15:19:22.240+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:display_name) in stmt(0x7f4778003af8) is 4
+2023-09-21T15:19:22.240+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:user_email) in stmt(0x7f4778003af8) is 5
+2023-09-21T15:19:22.240+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:access_keys_id) in stmt(0x7f4778003af8) is 6
+2023-09-21T15:19:22.240+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:access_keys_secret) in stmt(0x7f4778003af8) is 7
+2023-09-21T15:19:22.240+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:access_keys) in stmt(0x7f4778003af8) is 8
+2023-09-21T15:19:22.240+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:swift_keys) in stmt(0x7f4778003af8) is 9
+2023-09-21T15:19:22.240+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:subusers) in stmt(0x7f4778003af8) is 10
+2023-09-21T15:19:22.240+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:suspended) in stmt(0x7f4778003af8) is 11
+2023-09-21T15:19:22.240+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:max_buckets) in stmt(0x7f4778003af8) is 12
+2023-09-21T15:19:22.240+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:op_mask) in stmt(0x7f4778003af8) is 13
+2023-09-21T15:19:22.240+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:user_caps) in stmt(0x7f4778003af8) is 14
+2023-09-21T15:19:22.240+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:admin) in stmt(0x7f4778003af8) is 15
+2023-09-21T15:19:22.240+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:system) in stmt(0x7f4778003af8) is 16
+2023-09-21T15:19:22.240+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:placement_name) in stmt(0x7f4778003af8) is 17
+2023-09-21T15:19:22.240+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:placement_storage_class) in stmt(0x7f4778003af8) is 18
+2023-09-21T15:19:22.240+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:placement_tags) in stmt(0x7f4778003af8) is 19
+2023-09-21T15:19:22.240+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:bucket_quota) in stmt(0x7f4778003af8) is 20
+2023-09-21T15:19:22.240+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:temp_url_keys) in stmt(0x7f4778003af8) is 21
+2023-09-21T15:19:22.240+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:user_quota) in stmt(0x7f4778003af8) is 22
+2023-09-21T15:19:22.240+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:type) in stmt(0x7f4778003af8) is 23
+2023-09-21T15:19:22.240+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:mfa_ids) in stmt(0x7f4778003af8) is 24
+2023-09-21T15:19:22.240+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:assumed_role_arn) in stmt(0x7f4778003af8) is 25
+2023-09-21T15:19:22.240+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:user_attrs) in stmt(0x7f4778003af8) is 26
+2023-09-21T15:19:22.240+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:user_vers) in stmt(0x7f4778003af8) is 27
+2023-09-21T15:19:22.240+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:user_ver_tag) in stmt(0x7f4778003af8) is 28
+2023-09-21T15:19:22.288+0000 7f4787ded700 20 rgw DBStore backend: sqlite step successfully executed for stmt(0x7f4778003af8)  ret = 101
+2023-09-21T15:19:22.288+0000 7f4787ded700 20 rgw DBStore backend: Successfully processed fop(InsertUser) 
+2023-09-21T15:19:22.288+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:tenant) in stmt(0x7f4778003af8) is 2
+2023-09-21T15:19:22.288+0000 7f4787ded700 20 rgw DBStore backend: Successfully Prepared stmt for Op(PrepareGetUser) schema(SELECT                           UserID, Tenant, NS, DisplayName, UserEmail,                           AccessKeysID, AccessKeysSecret, AccessKeys, SwiftKeys,                          SubUsers, Suspended, MaxBuckets, OpMask, UserCaps, Admin,                           System, PlacementName, PlacementStorageClass, PlacementTags,                           BucketQuota, TempURLKeys, UserQuota, Type, MfaIDs, AssumedRoleARN,                           UserAttrs, UserVersion, UserVersionTag from 'Redhat.user.table' where UserID = :user_id) stmt(0x7f4778004fc8)
+2023-09-21T15:19:22.288+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:user_id) in stmt(0x7f4778004fc8) is 1
+2023-09-21T15:19:22.288+0000 7f4787ded700 20 rgw DBStore backend: sqlite step successfully executed for stmt(0x7f4778004fc8)  ret = 101
+2023-09-21T15:19:22.288+0000 7f4787ded700 20 rgw DBStore backend: Successfully processed fop(GetUser) 
+2023-09-21T15:19:22.288+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:user_id) in stmt(0x7f4778003af8) is 1
+2023-09-21T15:19:22.288+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:ns) in stmt(0x7f4778003af8) is 3
+2023-09-21T15:19:22.288+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:display_name) in stmt(0x7f4778003af8) is 4
+2023-09-21T15:19:22.288+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:user_email) in stmt(0x7f4778003af8) is 5
+2023-09-21T15:19:22.288+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:access_keys_id) in stmt(0x7f4778003af8) is 6
+2023-09-21T15:19:22.288+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:access_keys_secret) in stmt(0x7f4778003af8) is 7
+2023-09-21T15:19:22.288+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:access_keys) in stmt(0x7f4778003af8) is 8
+2023-09-21T15:19:22.288+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:swift_keys) in stmt(0x7f4778003af8) is 9
+2023-09-21T15:19:22.288+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:subusers) in stmt(0x7f4778003af8) is 10
+2023-09-21T15:19:22.288+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:suspended) in stmt(0x7f4778003af8) is 11
+2023-09-21T15:19:22.288+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:max_buckets) in stmt(0x7f4778003af8) is 12
+2023-09-21T15:19:22.288+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:op_mask) in stmt(0x7f4778003af8) is 13
+2023-09-21T15:19:22.288+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:user_caps) in stmt(0x7f4778003af8) is 14
+2023-09-21T15:19:22.288+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:admin) in stmt(0x7f4778003af8) is 15
+2023-09-21T15:19:22.288+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:system) in stmt(0x7f4778003af8) is 16
+2023-09-21T15:19:22.288+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:placement_name) in stmt(0x7f4778003af8) is 17
+2023-09-21T15:19:22.288+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:placement_storage_class) in stmt(0x7f4778003af8) is 18
+2023-09-21T15:19:22.288+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:placement_tags) in stmt(0x7f4778003af8) is 19
+2023-09-21T15:19:22.288+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:bucket_quota) in stmt(0x7f4778003af8) is 20
+2023-09-21T15:19:22.288+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:temp_url_keys) in stmt(0x7f4778003af8) is 21
+2023-09-21T15:19:22.288+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:user_quota) in stmt(0x7f4778003af8) is 22
+2023-09-21T15:19:22.288+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:type) in stmt(0x7f4778003af8) is 23
+2023-09-21T15:19:22.288+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:mfa_ids) in stmt(0x7f4778003af8) is 24
+2023-09-21T15:19:22.288+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:assumed_role_arn) in stmt(0x7f4778003af8) is 25
+2023-09-21T15:19:22.288+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:user_attrs) in stmt(0x7f4778003af8) is 26
+2023-09-21T15:19:22.288+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:user_vers) in stmt(0x7f4778003af8) is 27
+2023-09-21T15:19:22.288+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:user_ver_tag) in stmt(0x7f4778003af8) is 28
+2023-09-21T15:19:22.336+0000 7f47875ec700 20 rgw DBStore backend: sqlite step successfully executed for stmt(0x7f4778003af8)  ret = 101
+2023-09-21T15:19:22.336+0000 7f47875ec700 20 rgw DBStore backend: Successfully processed fop(InsertUser) 
+2023-09-21T15:19:22.336+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:user_id) in stmt(0x7f4778004fc8) is 1
+2023-09-21T15:19:22.336+0000 7f4787ded700 20 rgw DBStore backend: Successfully Prepared stmt for Op(PrepareInsertBucket) schema(INSERT OR REPLACE INTO 'Redhat.bucket.table'       (BucketName, Tenant, Marker, BucketID, Size, SizeRounded, CreationTime,        Count, PlacementName, PlacementStorageClass, OwnerID, Flags, Zonegroup,        HasInstanceObj, Quota, RequesterPays, HasWebsite, WebsiteConf,        SwiftVersioning, SwiftVerLocation,        MdsearchConfig, NewBucketInstanceID, ObjectLock,        SyncPolicyInfoGroups, BucketAttrs, BucketVersion, BucketVersionTag, Mtime)       VALUES (:bucket_name, :tenant, :marker, :bucket_id, :size, :size_rounded, :creation_time, :count, :placement_name,           :placement_storage_class, :user_id, :flags, :zonegroup, :has_instance_obj, :quota, :requester_pays, :has_website, :website_conf,           :swift_versioning, :swift_ver_location, :mdsearch_config, :new_bucket_instance_id, :obj_lock, :sync_policy_info_groups, :bucket_attrs, :bucket_vers, :bucket_ver_tag, :mtime)) stmt(0x7f477802b788)
+2023-09-21T15:19:22.336+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:user_id) in stmt(0x7f477802b788) is 11
+2023-09-21T15:19:22.336+0000 7f47875ec700 20 rgw DBStore backend: sqlite step successfully executed for stmt(0x7f4778004fc8)  ret = 101
+2023-09-21T15:19:22.336+0000 7f47875ec700 20 rgw DBStore backend: Successfully processed fop(GetUser) 
+2023-09-21T15:19:22.336+0000 7f47875ec700 20 rgw DBStore backend: Objectmap entry already exists for bucket(rgw). Not inserted 
+2023-09-21T15:19:22.336+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:bucket_name) in stmt(0x7f477802b788) is 1
+2023-09-21T15:19:22.336+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:tenant) in stmt(0x7f477802b788) is 2
+2023-09-21T15:19:22.336+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:marker) in stmt(0x7f477802b788) is 3
+2023-09-21T15:19:22.336+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:bucket_id) in stmt(0x7f477802b788) is 4
+2023-09-21T15:19:22.336+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:size) in stmt(0x7f477802b788) is 5
+2023-09-21T15:19:22.336+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:size_rounded) in stmt(0x7f477802b788) is 6
+2023-09-21T15:19:22.336+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:creation_time) in stmt(0x7f477802b788) is 7
+2023-09-21T15:19:22.336+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:count) in stmt(0x7f477802b788) is 8
+2023-09-21T15:19:22.336+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:placement_name) in stmt(0x7f477802b788) is 9
+2023-09-21T15:19:22.336+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:placement_storage_class) in stmt(0x7f477802b788) is 10
+2023-09-21T15:19:22.336+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:flags) in stmt(0x7f477802b788) is 12
+2023-09-21T15:19:22.336+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:zonegroup) in stmt(0x7f477802b788) is 13
+2023-09-21T15:19:22.336+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:has_instance_obj) in stmt(0x7f477802b788) is 14
+2023-09-21T15:19:22.336+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:quota) in stmt(0x7f477802b788) is 15
+2023-09-21T15:19:22.336+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:requester_pays) in stmt(0x7f477802b788) is 16
+2023-09-21T15:19:22.336+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:has_website) in stmt(0x7f477802b788) is 17
+2023-09-21T15:19:22.336+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:website_conf) in stmt(0x7f477802b788) is 18
+2023-09-21T15:19:22.336+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:swift_versioning) in stmt(0x7f477802b788) is 19
+2023-09-21T15:19:22.336+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:swift_ver_location) in stmt(0x7f477802b788) is 20
+2023-09-21T15:19:22.336+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:mdsearch_config) in stmt(0x7f477802b788) is 21
+2023-09-21T15:19:22.336+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:new_bucket_instance_id) in stmt(0x7f477802b788) is 22
+2023-09-21T15:19:22.336+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:obj_lock) in stmt(0x7f477802b788) is 23
+2023-09-21T15:19:22.336+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:sync_policy_info_groups) in stmt(0x7f477802b788) is 24
+2023-09-21T15:19:22.336+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:bucket_attrs) in stmt(0x7f477802b788) is 25
+2023-09-21T15:19:22.336+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:bucket_vers) in stmt(0x7f477802b788) is 26
+2023-09-21T15:19:22.336+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:bucket_ver_tag) in stmt(0x7f477802b788) is 27
+2023-09-21T15:19:22.336+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:mtime) in stmt(0x7f477802b788) is 28
+2023-09-21T15:19:22.376+0000 7f4787ded700 20 rgw DBStore backend: sqlite step successfully executed for stmt(0x7f477802b788)  ret = 101
+2023-09-21T15:19:22.376+0000 7f4787ded700 20 rgw DBStore backend: Successfully processed fop(InsertBucket) 
+2023-09-21T15:19:22.376+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:tenant) in stmt(0x7f4778003af8) is 2
+2023-09-21T15:19:22.376+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:user_id) in stmt(0x7f4778003af8) is 1
+2023-09-21T15:19:22.376+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:ns) in stmt(0x7f4778003af8) is 3
+2023-09-21T15:19:22.376+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:display_name) in stmt(0x7f4778003af8) is 4
+2023-09-21T15:19:22.376+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:user_email) in stmt(0x7f4778003af8) is 5
+2023-09-21T15:19:22.376+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:access_keys_id) in stmt(0x7f4778003af8) is 6
+2023-09-21T15:19:22.376+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:access_keys_secret) in stmt(0x7f4778003af8) is 7
+2023-09-21T15:19:22.376+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:access_keys) in stmt(0x7f4778003af8) is 8
+2023-09-21T15:19:22.376+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:swift_keys) in stmt(0x7f4778003af8) is 9
+2023-09-21T15:19:22.376+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:subusers) in stmt(0x7f4778003af8) is 10
+2023-09-21T15:19:22.376+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:suspended) in stmt(0x7f4778003af8) is 11
+2023-09-21T15:19:22.376+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:max_buckets) in stmt(0x7f4778003af8) is 12
+2023-09-21T15:19:22.376+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:op_mask) in stmt(0x7f4778003af8) is 13
+2023-09-21T15:19:22.376+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:user_caps) in stmt(0x7f4778003af8) is 14
+2023-09-21T15:19:22.376+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:admin) in stmt(0x7f4778003af8) is 15
+2023-09-21T15:19:22.376+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:system) in stmt(0x7f4778003af8) is 16
+2023-09-21T15:19:22.376+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:placement_name) in stmt(0x7f4778003af8) is 17
+2023-09-21T15:19:22.376+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:placement_storage_class) in stmt(0x7f4778003af8) is 18
+2023-09-21T15:19:22.376+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:placement_tags) in stmt(0x7f4778003af8) is 19
+2023-09-21T15:19:22.376+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:bucket_quota) in stmt(0x7f4778003af8) is 20
+2023-09-21T15:19:22.376+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:temp_url_keys) in stmt(0x7f4778003af8) is 21
+2023-09-21T15:19:22.376+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:user_quota) in stmt(0x7f4778003af8) is 22
+2023-09-21T15:19:22.376+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:type) in stmt(0x7f4778003af8) is 23
+2023-09-21T15:19:22.376+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:mfa_ids) in stmt(0x7f4778003af8) is 24
+2023-09-21T15:19:22.376+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:assumed_role_arn) in stmt(0x7f4778003af8) is 25
+2023-09-21T15:19:22.376+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:user_attrs) in stmt(0x7f4778003af8) is 26
+2023-09-21T15:19:22.376+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:user_vers) in stmt(0x7f4778003af8) is 27
+2023-09-21T15:19:22.376+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:user_ver_tag) in stmt(0x7f4778003af8) is 28
+2023-09-21T15:19:22.376+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:user_id) in stmt(0x7f477802b788) is 11
+2023-09-21T15:19:22.420+0000 7f4787ded700 20 rgw DBStore backend: sqlite step successfully executed for stmt(0x7f4778003af8)  ret = 101
+2023-09-21T15:19:22.420+0000 7f4787ded700 20 rgw DBStore backend: Successfully processed fop(InsertUser) 
+2023-09-21T15:19:22.420+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:bucket_name) in stmt(0x7f477802b788) is 1
+2023-09-21T15:19:22.420+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:tenant) in stmt(0x7f477802b788) is 2
+2023-09-21T15:19:22.420+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:marker) in stmt(0x7f477802b788) is 3
+2023-09-21T15:19:22.420+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:bucket_id) in stmt(0x7f477802b788) is 4
+2023-09-21T15:19:22.420+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:size) in stmt(0x7f477802b788) is 5
+2023-09-21T15:19:22.420+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:size_rounded) in stmt(0x7f477802b788) is 6
+2023-09-21T15:19:22.420+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:creation_time) in stmt(0x7f477802b788) is 7
+2023-09-21T15:19:22.420+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:count) in stmt(0x7f477802b788) is 8
+2023-09-21T15:19:22.420+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:placement_name) in stmt(0x7f477802b788) is 9
+2023-09-21T15:19:22.420+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:placement_storage_class) in stmt(0x7f477802b788) is 10
+2023-09-21T15:19:22.420+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:flags) in stmt(0x7f477802b788) is 12
+2023-09-21T15:19:22.420+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:zonegroup) in stmt(0x7f477802b788) is 13
+2023-09-21T15:19:22.420+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:has_instance_obj) in stmt(0x7f477802b788) is 14
+2023-09-21T15:19:22.420+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:quota) in stmt(0x7f477802b788) is 15
+2023-09-21T15:19:22.420+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:requester_pays) in stmt(0x7f477802b788) is 16
+2023-09-21T15:19:22.420+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:has_website) in stmt(0x7f477802b788) is 17
+2023-09-21T15:19:22.420+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:website_conf) in stmt(0x7f477802b788) is 18
+2023-09-21T15:19:22.420+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:swift_versioning) in stmt(0x7f477802b788) is 19
+2023-09-21T15:19:22.420+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:swift_ver_location) in stmt(0x7f477802b788) is 20
+2023-09-21T15:19:22.420+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:mdsearch_config) in stmt(0x7f477802b788) is 21
+2023-09-21T15:19:22.420+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:new_bucket_instance_id) in stmt(0x7f477802b788) is 22
+2023-09-21T15:19:22.420+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:obj_lock) in stmt(0x7f477802b788) is 23
+2023-09-21T15:19:22.420+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:sync_policy_info_groups) in stmt(0x7f477802b788) is 24
+2023-09-21T15:19:22.420+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:bucket_attrs) in stmt(0x7f477802b788) is 25
+2023-09-21T15:19:22.420+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:bucket_vers) in stmt(0x7f477802b788) is 26
+2023-09-21T15:19:22.420+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:bucket_ver_tag) in stmt(0x7f477802b788) is 27
+2023-09-21T15:19:22.420+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:mtime) in stmt(0x7f477802b788) is 28
+2023-09-21T15:19:22.452+0000 7f47875ec700 20 rgw DBStore backend: sqlite step successfully executed for stmt(0x7f477802b788)  ret = 101
+2023-09-21T15:19:22.452+0000 7f47875ec700 20 rgw DBStore backend: Successfully processed fop(InsertBucket) 
+2023-09-21T15:19:22.452+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:tenant) in stmt(0x7f4778003af8) is 2
+2023-09-21T15:19:22.452+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:user_id) in stmt(0x7f4778003af8) is 1
+2023-09-21T15:19:22.452+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:ns) in stmt(0x7f4778003af8) is 3
+2023-09-21T15:19:22.452+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:display_name) in stmt(0x7f4778003af8) is 4
+2023-09-21T15:19:22.452+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:user_email) in stmt(0x7f4778003af8) is 5
+2023-09-21T15:19:22.452+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:access_keys_id) in stmt(0x7f4778003af8) is 6
+2023-09-21T15:19:22.452+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:access_keys_secret) in stmt(0x7f4778003af8) is 7
+2023-09-21T15:19:22.452+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:access_keys) in stmt(0x7f4778003af8) is 8
+2023-09-21T15:19:22.452+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:swift_keys) in stmt(0x7f4778003af8) is 9
+2023-09-21T15:19:22.452+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:subusers) in stmt(0x7f4778003af8) is 10
+2023-09-21T15:19:22.452+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:suspended) in stmt(0x7f4778003af8) is 11
+2023-09-21T15:19:22.452+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:max_buckets) in stmt(0x7f4778003af8) is 12
+2023-09-21T15:19:22.452+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:user_id) in stmt(0x7f477802b788) is 11
+2023-09-21T15:19:22.452+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:bucket_name) in stmt(0x7f477802b788) is 1
+2023-09-21T15:19:22.452+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:tenant) in stmt(0x7f477802b788) is 2
+2023-09-21T15:19:22.452+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:marker) in stmt(0x7f477802b788) is 3
+2023-09-21T15:19:22.452+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:bucket_id) in stmt(0x7f477802b788) is 4
+2023-09-21T15:19:22.452+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:size) in stmt(0x7f477802b788) is 5
+2023-09-21T15:19:22.452+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:size_rounded) in stmt(0x7f477802b788) is 6
+2023-09-21T15:19:22.452+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:creation_time) in stmt(0x7f477802b788) is 7
+2023-09-21T15:19:22.452+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:op_mask) in stmt(0x7f4778003af8) is 13
+2023-09-21T15:19:22.452+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:user_caps) in stmt(0x7f4778003af8) is 14
+2023-09-21T15:19:22.452+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:admin) in stmt(0x7f4778003af8) is 15
+2023-09-21T15:19:22.452+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:system) in stmt(0x7f4778003af8) is 16
+2023-09-21T15:19:22.452+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:placement_name) in stmt(0x7f4778003af8) is 17
+2023-09-21T15:19:22.452+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:placement_storage_class) in stmt(0x7f4778003af8) is 18
+2023-09-21T15:19:22.452+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:placement_tags) in stmt(0x7f4778003af8) is 19
+2023-09-21T15:19:22.452+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:count) in stmt(0x7f477802b788) is 8
+2023-09-21T15:19:22.452+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:bucket_quota) in stmt(0x7f4778003af8) is 20
+2023-09-21T15:19:22.452+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:placement_name) in stmt(0x7f477802b788) is 9
+2023-09-21T15:19:22.452+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:temp_url_keys) in stmt(0x7f4778003af8) is 21
+2023-09-21T15:19:22.452+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:placement_storage_class) in stmt(0x7f477802b788) is 10
+2023-09-21T15:19:22.452+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:user_quota) in stmt(0x7f4778003af8) is 22
+2023-09-21T15:19:22.452+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:flags) in stmt(0x7f477802b788) is 12
+2023-09-21T15:19:22.452+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:type) in stmt(0x7f4778003af8) is 23
+2023-09-21T15:19:22.452+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:zonegroup) in stmt(0x7f477802b788) is 13
+2023-09-21T15:19:22.452+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:mfa_ids) in stmt(0x7f4778003af8) is 24
+2023-09-21T15:19:22.452+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:has_instance_obj) in stmt(0x7f477802b788) is 14
+2023-09-21T15:19:22.452+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:assumed_role_arn) in stmt(0x7f4778003af8) is 25
+2023-09-21T15:19:22.452+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:quota) in stmt(0x7f477802b788) is 15
+2023-09-21T15:19:22.452+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:user_attrs) in stmt(0x7f4778003af8) is 26
+2023-09-21T15:19:22.452+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:user_vers) in stmt(0x7f4778003af8) is 27
+2023-09-21T15:19:22.452+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:user_ver_tag) in stmt(0x7f4778003af8) is 28
+2023-09-21T15:19:22.452+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:requester_pays) in stmt(0x7f477802b788) is 16
+2023-09-21T15:19:22.452+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:has_website) in stmt(0x7f477802b788) is 17
+2023-09-21T15:19:22.452+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:website_conf) in stmt(0x7f477802b788) is 18
+2023-09-21T15:19:22.500+0000 7f47875ec700 20 rgw DBStore backend: sqlite step successfully executed for stmt(0x7f4778003af8)  ret = 101
+2023-09-21T15:19:22.500+0000 7f47875ec700 20 rgw DBStore backend: Successfully processed fop(InsertUser) 
+2023-09-21T15:19:22.500+0000 7f47875ec700 20 rgw DBStore backend: Objectmap entry already exists for bucket(gluster). Not inserted 
+2023-09-21T15:19:22.500+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:swift_versioning) in stmt(0x7f477802b788) is 19
+2023-09-21T15:19:22.500+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:swift_ver_location) in stmt(0x7f477802b788) is 20
+2023-09-21T15:19:22.500+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:mdsearch_config) in stmt(0x7f477802b788) is 21
+2023-09-21T15:19:22.500+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:new_bucket_instance_id) in stmt(0x7f477802b788) is 22
+2023-09-21T15:19:22.500+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:obj_lock) in stmt(0x7f477802b788) is 23
+2023-09-21T15:19:22.500+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:sync_policy_info_groups) in stmt(0x7f477802b788) is 24
+2023-09-21T15:19:22.500+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:bucket_attrs) in stmt(0x7f477802b788) is 25
+2023-09-21T15:19:22.500+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:bucket_vers) in stmt(0x7f477802b788) is 26
+2023-09-21T15:19:22.500+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:bucket_ver_tag) in stmt(0x7f477802b788) is 27
+2023-09-21T15:19:22.500+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:mtime) in stmt(0x7f477802b788) is 28
+2023-09-21T15:19:22.548+0000 7f4787ded700 20 rgw DBStore backend: sqlite step successfully executed for stmt(0x7f477802b788)  ret = 101
+2023-09-21T15:19:22.548+0000 7f4787ded700 20 rgw DBStore backend: Successfully processed fop(InsertBucket) 
+2023-09-21T15:19:22.548+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:user_id) in stmt(0x7f4778004fc8) is 1
+2023-09-21T15:19:22.548+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:user_id) in stmt(0x7f477802b788) is 11
+2023-09-21T15:19:22.548+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:bucket_name) in stmt(0x7f477802b788) is 1
+2023-09-21T15:19:22.548+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:tenant) in stmt(0x7f477802b788) is 2
+2023-09-21T15:19:22.548+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:marker) in stmt(0x7f477802b788) is 3
+2023-09-21T15:19:22.548+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:bucket_id) in stmt(0x7f477802b788) is 4
+2023-09-21T15:19:22.548+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:size) in stmt(0x7f477802b788) is 5
+2023-09-21T15:19:22.548+0000 7f4787ded700 20 rgw DBStore backend: sqlite step successfully executed for stmt(0x7f4778004fc8)  ret = 101
+2023-09-21T15:19:22.548+0000 7f4787ded700 20 rgw DBStore backend: Successfully processed fop(GetUser) 
+2023-09-21T15:19:22.548+0000 7f4787ded700 20 rgw DBStore backend: Objectmap entry already exists for bucket(gluster). Not inserted 
+2023-09-21T15:19:22.548+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:size_rounded) in stmt(0x7f477802b788) is 6
+2023-09-21T15:19:22.548+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:creation_time) in stmt(0x7f477802b788) is 7
+2023-09-21T15:19:22.548+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:count) in stmt(0x7f477802b788) is 8
+2023-09-21T15:19:22.548+0000 7f4787ded700 20 rgw DBStore backend: Successfully Prepared stmt for Op(PrepareGetBucket) schema(SELECT                            BucketName, BucketTable.Tenant, Marker, BucketID, Size, SizeRounded, CreationTime,                           Count, BucketTable.PlacementName, BucketTable.PlacementStorageClass, OwnerID, Flags, Zonegroup,                           HasInstanceObj, Quota, RequesterPays, HasWebsite, WebsiteConf,                           SwiftVersioning, SwiftVerLocation,                           MdsearchConfig, NewBucketInstanceID, ObjectLock,                           SyncPolicyInfoGroups, BucketAttrs, BucketVersion, BucketVersionTag, Mtime, NS                           from 'Redhat.bucket.table' as BucketTable INNER JOIN 'Redhat.user.table' ON OwnerID = UserID where BucketName = :bucket_name) stmt(0x7f4778047778)
+2023-09-21T15:19:22.548+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:bucket_name) in stmt(0x7f4778047778) is 1
+2023-09-21T15:19:22.552+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:placement_name) in stmt(0x7f477802b788) is 9
+2023-09-21T15:19:22.552+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:placement_storage_class) in stmt(0x7f477802b788) is 10
+2023-09-21T15:19:22.552+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:flags) in stmt(0x7f477802b788) is 12
+2023-09-21T15:19:22.552+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:zonegroup) in stmt(0x7f477802b788) is 13
+2023-09-21T15:19:22.552+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:has_instance_obj) in stmt(0x7f477802b788) is 14
+2023-09-21T15:19:22.552+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:quota) in stmt(0x7f477802b788) is 15
+2023-09-21T15:19:22.552+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:requester_pays) in stmt(0x7f477802b788) is 16
+2023-09-21T15:19:22.552+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:has_website) in stmt(0x7f477802b788) is 17
+2023-09-21T15:19:22.552+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:website_conf) in stmt(0x7f477802b788) is 18
+2023-09-21T15:19:22.552+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:swift_versioning) in stmt(0x7f477802b788) is 19
+2023-09-21T15:19:22.552+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:swift_ver_location) in stmt(0x7f477802b788) is 20
+2023-09-21T15:19:22.552+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:mdsearch_config) in stmt(0x7f477802b788) is 21
+2023-09-21T15:19:22.552+0000 7f4787ded700 20 rgw DBStore backend: sqlite step successfully executed for stmt(0x7f4778047778)  ret = 101
+2023-09-21T15:19:22.552+0000 7f4787ded700 20 rgw DBStore backend: Successfully processed fop(GetBucket) 
+2023-09-21T15:19:22.552+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:new_bucket_instance_id) in stmt(0x7f477802b788) is 22
+2023-09-21T15:19:22.552+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:obj_lock) in stmt(0x7f477802b788) is 23
+2023-09-21T15:19:22.552+0000 7f4787ded700 10 rgw DBStore backend: sqlite exec successfully processed for schema(SELECT  * from 'Redhat.user.table')
+2023-09-21T15:19:22.552+0000 7f4787ded700 20 rgw DBStore backend: GetUserTable suceeded 
+2023-09-21T15:19:22.552+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:sync_policy_info_groups) in stmt(0x7f477802b788) is 24
+2023-09-21T15:19:22.552+0000 7f4787ded700 10 rgw DBStore backend: sqlite exec successfully processed for schema(SELECT  * from 'Redhat.bucket.table')
+2023-09-21T15:19:22.552+0000 7f4787ded700 20 rgw DBStore backend: ListbucketTable suceeded 
+2023-09-21T15:19:22.552+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:bucket_attrs) in stmt(0x7f477802b788) is 25
+2023-09-21T15:19:22.552+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:bucket_vers) in stmt(0x7f477802b788) is 26
+2023-09-21T15:19:22.552+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:bucket_ver_tag) in stmt(0x7f477802b788) is 27
+2023-09-21T15:19:22.552+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:mtime) in stmt(0x7f477802b788) is 28
+2023-09-21T15:19:22.608+0000 7f47875ec700 20 rgw DBStore backend: sqlite step successfully executed for stmt(0x7f477802b788)  ret = 101
+2023-09-21T15:19:22.608+0000 7f47875ec700 20 rgw DBStore backend: Successfully processed fop(InsertBucket) 
+2023-09-21T15:19:22.608+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:user_id) in stmt(0x7f4778004fc8) is 1
+2023-09-21T15:19:22.608+0000 7f4787ded700 20 rgw DBStore backend: Successfully Prepared stmt for Op(PrepareRemoveBucket) schema(DELETE from 'Redhat.bucket.table' where BucketName = :bucket_name) stmt(0x7f477803fa78)
+2023-09-21T15:19:22.608+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:bucket_name) in stmt(0x7f477803fa78) is 1
+2023-09-21T15:19:22.640+0000 7f4787ded700 20 rgw DBStore backend: sqlite step successfully executed for stmt(0x7f477803fa78)  ret = 101
+2023-09-21T15:19:22.640+0000 7f4787ded700 20 rgw DBStore backend: Successfully processed fop(RemoveBucket) 
+2023-09-21T15:19:22.640+0000 7f4787ded700 20 rgw DBStore backend: Successfully Prepared stmt for Op(PrepareRemoveUser) schema(DELETE from 'Redhat.user.table' where UserID = :user_id) stmt(0x7f477803cf48)
+2023-09-21T15:19:22.640+0000 7f4787ded700 20 rgw DBStore backend: Bind parameter index for str(:user_id) in stmt(0x7f477803cf48) is 1
+2023-09-21T15:19:22.684+0000 7f4787ded700 20 rgw DBStore backend: sqlite step successfully executed for stmt(0x7f477803cf48)  ret = 101
+2023-09-21T15:19:22.684+0000 7f4787ded700 20 rgw DBStore backend: Successfully processed fop(RemoveUser) 
+2023-09-21T15:19:22.684+0000 7f4787ded700 10 rgw DBStore backend: sqlite exec successfully processed for schema(SELECT  * from 'Redhat.user.table')
+2023-09-21T15:19:22.684+0000 7f4787ded700 20 rgw DBStore backend: GetUserTable suceeded 
+2023-09-21T15:19:22.684+0000 7f4787ded700 10 rgw DBStore backend: sqlite exec successfully processed for schema(SELECT  * from 'Redhat.bucket.table')
+2023-09-21T15:19:22.684+0000 7f4787ded700 20 rgw DBStore backend: ListbucketTable suceeded 
+2023-09-21T15:19:22.684+0000 7f47875ec700 20 rgw DBStore backend: sqlite step successfully executed for stmt(0x7f4778004fc8)  ret = 101
+2023-09-21T15:19:22.684+0000 7f47875ec700 20 rgw DBStore backend: Successfully processed fop(GetUser) 
+2023-09-21T15:19:22.684+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:bucket_name) in stmt(0x7f4778047778) is 1
+2023-09-21T15:19:22.684+0000 7f47875ec700 20 rgw DBStore backend: sqlite step successfully executed for stmt(0x7f4778047778)  ret = 101
+2023-09-21T15:19:22.684+0000 7f47875ec700 20 rgw DBStore backend: Successfully processed fop(GetBucket) 
+2023-09-21T15:19:22.684+0000 7f47875ec700 10 rgw DBStore backend: sqlite exec successfully processed for schema(SELECT  * from 'Redhat.user.table')
+2023-09-21T15:19:22.684+0000 7f47875ec700 20 rgw DBStore backend: GetUserTable suceeded 
+2023-09-21T15:19:22.684+0000 7f47875ec700 10 rgw DBStore backend: sqlite exec successfully processed for schema(SELECT  * from 'Redhat.bucket.table')
+2023-09-21T15:19:22.684+0000 7f47875ec700 20 rgw DBStore backend: ListbucketTable suceeded 
+2023-09-21T15:19:22.684+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:bucket_name) in stmt(0x7f477803fa78) is 1
+2023-09-21T15:19:22.684+0000 7f47875ec700 20 rgw DBStore backend: sqlite step successfully executed for stmt(0x7f477803fa78)  ret = 101
+2023-09-21T15:19:22.684+0000 7f47875ec700 20 rgw DBStore backend: Successfully processed fop(RemoveBucket) 
+2023-09-21T15:19:22.684+0000 7f47875ec700 20 rgw DBStore backend: Bind parameter index for str(:user_id) in stmt(0x7f477803cf48) is 1
+2023-09-21T15:19:22.684+0000 7f47875ec700 20 rgw DBStore backend: sqlite step successfully executed for stmt(0x7f477803cf48)  ret = 101
+2023-09-21T15:19:22.684+0000 7f47875ec700 20 rgw DBStore backend: Successfully processed fop(RemoveUser) 
+2023-09-21T15:19:22.684+0000 7f47875ec700 10 rgw DBStore backend: sqlite exec successfully processed for schema(SELECT  * from 'Redhat.user.table')
+2023-09-21T15:19:22.684+0000 7f47875ec700 20 rgw DBStore backend: GetUserTable suceeded 
+2023-09-21T15:19:22.684+0000 7f47875ec700 10 rgw DBStore backend: sqlite exec successfully processed for schema(SELECT  * from 'Redhat.bucket.table')
+2023-09-21T15:19:22.684+0000 7f47875ec700 20 rgw DBStore backend: ListbucketTable suceeded 
+2023-09-21T15:19:22.684+0000 7f478d2b3e40 20 rgw DBStore backend: DB successfully destroyed - name:Redhat
+2023-09-21T15:19:25.128+0000 7fb71a919e40  0 rgw DBStore backend: Opened database(Redhat.db) successfully
+2023-09-21T15:19:25.128+0000 7fb71a919e40 10 rgw DBStore backend: sqlite exec successfully processed for schema(PRAGMA foreign_keys=ON)
+2023-09-21T15:19:25.128+0000 7fb71a919e40 10 rgw DBStore backend: sqlite exec successfully processed for schema(CREATE TABLE IF NOT EXISTS 'Redhat.user.table' (	      UserID TEXT NOT NULL UNIQUE,		      Tenant TEXT ,		      NS TEXT ,		      DisplayName TEXT ,       UserEmail TEXT ,	      AccessKeysID TEXT ,	      AccessKeysSecret TEXT ,	      AccessKeys BLOB ,	      SwiftKeys BLOB ,	      SubUsers BLOB ,		      Suspended INTEGER ,	      MaxBuckets INTEGER ,	      OpMask	INTEGER ,	      UserCaps BLOB ,		      Admin	INTEGER ,	      System INTEGER , 	      PlacementName TEXT , 	      PlacementStorageClass TEXT , 	      PlacementTags BLOB ,	      BucketQuota BLOB ,	      TempURLKeys BLOB ,	      UserQuota BLOB ,	      TYPE INTEGER ,		      MfaIDs BLOB ,	      AssumedRoleARN TEXT ,       UserAttrs   BLOB,         UserVersion   INTEGER,          UserVersionTag TEXT,            PRIMARY KEY (UserID) 
+);)
+2023-09-21T15:19:25.128+0000 7fb71a919e40 20 rgw DBStore backend: CreateUserTable suceeded
+2023-09-21T15:19:25.128+0000 7fb71a919e40 10 rgw DBStore backend: sqlite exec successfully processed for schema(CREATE TABLE IF NOT EXISTS 'Redhat.bucket.table' (       BucketName TEXT NOT NULL UNIQUE ,       Tenant TEXT,              Marker TEXT,              BucketID TEXT,            Size   INTEGER,           SizeRounded INTEGER,      CreationTime BLOB,        Count  INTEGER,           PlacementName TEXT , 	      PlacementStorageClass TEXT , 	      OwnerID TEXT NOT NULL,       Flags   INTEGER,             Zonegroup TEXT,               HasInstanceObj BOOLEAN,       Quota   BLOB,             RequesterPays BOOLEAN,        HasWebsite  BOOLEAN,          WebsiteConf BLOB,         SwiftVersioning BOOLEAN,       SwiftVerLocation TEXT,        MdsearchConfig  BLOB,         NewBucketInstanceID TEXT,      ObjectLock BLOB,       SyncPolicyInfoGroups BLOB,       BucketAttrs   BLOB,         BucketVersion   INTEGER,          BucketVersionTag TEXT,            Mtime   BLOB,         PRIMARY KEY (BucketName)       FOREIGN KEY (OwnerID)       REFERENCES 'Redhat.user.table' (UserID) ON DELETE CASCADE ON UPDATE CASCADE 
+);)
+2023-09-21T15:19:25.128+0000 7fb71a919e40 20 rgw DBStore backend: CreateBucketTable suceeded 
+2023-09-21T15:19:25.128+0000 7fb71a919e40 10 rgw DBStore backend: sqlite exec successfully processed for schema(CREATE TABLE IF NOT EXISTS '' (       QuotaID INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE ,       MaxSizeSoftThreshold INTEGER ,	      MaxObjsSoftThreshold INTEGER ,	      MaxSize	INTEGER ,		      MaxObjects INTEGER ,		      Enabled Boolean ,		      CheckOnRaw Boolean 
+);)
+2023-09-21T15:19:25.128+0000 7fb71a919e40 20 rgw DBStore backend: CreateQuotaTable suceeded 
+2023-09-21T15:19:25.128+0000 7fb71a919e40  0 rgw DBStore backend: DB successfully initialized - name:Redhat
+2023-09-21T15:19:25.128+0000 7fb715453700 20 rgw DBStore backend: Successfully Prepared stmt for Op(PrepareInsertUser) schema(INSERT OR REPLACE INTO 'Redhat.user.table'	                          (UserID, Tenant, NS, DisplayName, UserEmail,                            AccessKeysID, AccessKeysSecret, AccessKeys, SwiftKeys,                           SubUsers, Suspended, MaxBuckets, OpMask, UserCaps, Admin,                            System, PlacementName, PlacementStorageClass, PlacementTags,                            BucketQuota, TempURLKeys, UserQuota, Type, MfaIDs, AssumedRoleARN,                            UserAttrs, UserVersion, UserVersionTag)                           VALUES (:user_id, :tenant, :ns, :display_name, :user_email, :access_keys_id, :access_keys_secret, :access_keys, :swift_keys, :subusers, :suspended, :max_buckets, :op_mask,                               :user_caps, :admin, :system, :placement_name, :placement_storage_class, :placement_tags, :bucket_quota, :temp_url_keys, :user_quota, :type, :mfa_ids, :assumed_role_arn, :user_attrs, :user_vers, :user_ver_tag);) stmt(0x7fb708003af8)
+2023-09-21T15:19:25.128+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:tenant) in stmt(0x7fb708003af8) is 2
+2023-09-21T15:19:25.128+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:user_id) in stmt(0x7fb708003af8) is 1
+2023-09-21T15:19:25.128+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:ns) in stmt(0x7fb708003af8) is 3
+2023-09-21T15:19:25.128+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:display_name) in stmt(0x7fb708003af8) is 4
+2023-09-21T15:19:25.128+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:user_email) in stmt(0x7fb708003af8) is 5
+2023-09-21T15:19:25.128+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:access_keys_id) in stmt(0x7fb708003af8) is 6
+2023-09-21T15:19:25.128+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:access_keys_secret) in stmt(0x7fb708003af8) is 7
+2023-09-21T15:19:25.128+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:access_keys) in stmt(0x7fb708003af8) is 8
+2023-09-21T15:19:25.128+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:swift_keys) in stmt(0x7fb708003af8) is 9
+2023-09-21T15:19:25.128+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:subusers) in stmt(0x7fb708003af8) is 10
+2023-09-21T15:19:25.128+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:suspended) in stmt(0x7fb708003af8) is 11
+2023-09-21T15:19:25.128+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:max_buckets) in stmt(0x7fb708003af8) is 12
+2023-09-21T15:19:25.128+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:op_mask) in stmt(0x7fb708003af8) is 13
+2023-09-21T15:19:25.128+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:user_caps) in stmt(0x7fb708003af8) is 14
+2023-09-21T15:19:25.128+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:admin) in stmt(0x7fb708003af8) is 15
+2023-09-21T15:19:25.128+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:system) in stmt(0x7fb708003af8) is 16
+2023-09-21T15:19:25.128+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:placement_name) in stmt(0x7fb708003af8) is 17
+2023-09-21T15:19:25.128+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:placement_storage_class) in stmt(0x7fb708003af8) is 18
+2023-09-21T15:19:25.128+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:placement_tags) in stmt(0x7fb708003af8) is 19
+2023-09-21T15:19:25.128+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:bucket_quota) in stmt(0x7fb708003af8) is 20
+2023-09-21T15:19:25.128+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:temp_url_keys) in stmt(0x7fb708003af8) is 21
+2023-09-21T15:19:25.128+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:user_quota) in stmt(0x7fb708003af8) is 22
+2023-09-21T15:19:25.128+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:type) in stmt(0x7fb708003af8) is 23
+2023-09-21T15:19:25.128+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:mfa_ids) in stmt(0x7fb708003af8) is 24
+2023-09-21T15:19:25.128+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:assumed_role_arn) in stmt(0x7fb708003af8) is 25
+2023-09-21T15:19:25.128+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:user_attrs) in stmt(0x7fb708003af8) is 26
+2023-09-21T15:19:25.128+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:user_vers) in stmt(0x7fb708003af8) is 27
+2023-09-21T15:19:25.128+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:user_ver_tag) in stmt(0x7fb708003af8) is 28
+2023-09-21T15:19:25.164+0000 7fb715453700 20 rgw DBStore backend: sqlite step successfully executed for stmt(0x7fb708003af8)  ret = 101
+2023-09-21T15:19:25.164+0000 7fb715453700 20 rgw DBStore backend: Successfully processed fop(InsertUser) 
+2023-09-21T15:19:25.164+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:tenant) in stmt(0x7fb708003af8) is 2
+2023-09-21T15:19:25.164+0000 7fb715453700 20 rgw DBStore backend: Successfully Prepared stmt for Op(PrepareGetUser) schema(SELECT                           UserID, Tenant, NS, DisplayName, UserEmail,                           AccessKeysID, AccessKeysSecret, AccessKeys, SwiftKeys,                          SubUsers, Suspended, MaxBuckets, OpMask, UserCaps, Admin,                           System, PlacementName, PlacementStorageClass, PlacementTags,                           BucketQuota, TempURLKeys, UserQuota, Type, MfaIDs, AssumedRoleARN,                           UserAttrs, UserVersion, UserVersionTag from 'Redhat.user.table' where UserID = :user_id) stmt(0x7fb708004fc8)
+2023-09-21T15:19:25.164+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:user_id) in stmt(0x7fb708004fc8) is 1
+2023-09-21T15:19:25.164+0000 7fb715453700 20 rgw DBStore backend: sqlite step successfully executed for stmt(0x7fb708004fc8)  ret = 101
+2023-09-21T15:19:25.164+0000 7fb715453700 20 rgw DBStore backend: Successfully processed fop(GetUser) 
+2023-09-21T15:19:25.164+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:user_id) in stmt(0x7fb708003af8) is 1
+2023-09-21T15:19:25.164+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:ns) in stmt(0x7fb708003af8) is 3
+2023-09-21T15:19:25.164+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:display_name) in stmt(0x7fb708003af8) is 4
+2023-09-21T15:19:25.164+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:user_email) in stmt(0x7fb708003af8) is 5
+2023-09-21T15:19:25.164+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:access_keys_id) in stmt(0x7fb708003af8) is 6
+2023-09-21T15:19:25.164+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:access_keys_secret) in stmt(0x7fb708003af8) is 7
+2023-09-21T15:19:25.164+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:access_keys) in stmt(0x7fb708003af8) is 8
+2023-09-21T15:19:25.164+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:swift_keys) in stmt(0x7fb708003af8) is 9
+2023-09-21T15:19:25.164+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:subusers) in stmt(0x7fb708003af8) is 10
+2023-09-21T15:19:25.164+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:suspended) in stmt(0x7fb708003af8) is 11
+2023-09-21T15:19:25.164+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:max_buckets) in stmt(0x7fb708003af8) is 12
+2023-09-21T15:19:25.164+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:op_mask) in stmt(0x7fb708003af8) is 13
+2023-09-21T15:19:25.164+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:user_caps) in stmt(0x7fb708003af8) is 14
+2023-09-21T15:19:25.164+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:admin) in stmt(0x7fb708003af8) is 15
+2023-09-21T15:19:25.164+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:system) in stmt(0x7fb708003af8) is 16
+2023-09-21T15:19:25.164+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:placement_name) in stmt(0x7fb708003af8) is 17
+2023-09-21T15:19:25.164+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:placement_storage_class) in stmt(0x7fb708003af8) is 18
+2023-09-21T15:19:25.164+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:placement_tags) in stmt(0x7fb708003af8) is 19
+2023-09-21T15:19:25.164+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:bucket_quota) in stmt(0x7fb708003af8) is 20
+2023-09-21T15:19:25.164+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:temp_url_keys) in stmt(0x7fb708003af8) is 21
+2023-09-21T15:19:25.164+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:user_quota) in stmt(0x7fb708003af8) is 22
+2023-09-21T15:19:25.164+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:type) in stmt(0x7fb708003af8) is 23
+2023-09-21T15:19:25.164+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:mfa_ids) in stmt(0x7fb708003af8) is 24
+2023-09-21T15:19:25.164+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:assumed_role_arn) in stmt(0x7fb708003af8) is 25
+2023-09-21T15:19:25.164+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:user_attrs) in stmt(0x7fb708003af8) is 26
+2023-09-21T15:19:25.164+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:user_vers) in stmt(0x7fb708003af8) is 27
+2023-09-21T15:19:25.164+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:user_ver_tag) in stmt(0x7fb708003af8) is 28
+2023-09-21T15:19:25.204+0000 7fb714c52700 20 rgw DBStore backend: sqlite step successfully executed for stmt(0x7fb708003af8)  ret = 101
+2023-09-21T15:19:25.204+0000 7fb715453700 20 rgw DBStore backend: Successfully Prepared stmt for Op(PrepareInsertBucket) schema(INSERT OR REPLACE INTO 'Redhat.bucket.table'       (BucketName, Tenant, Marker, BucketID, Size, SizeRounded, CreationTime,        Count, PlacementName, PlacementStorageClass, OwnerID, Flags, Zonegroup,        HasInstanceObj, Quota, RequesterPays, HasWebsite, WebsiteConf,        SwiftVersioning, SwiftVerLocation,        MdsearchConfig, NewBucketInstanceID, ObjectLock,        SyncPolicyInfoGroups, BucketAttrs, BucketVersion, BucketVersionTag, Mtime)       VALUES (:bucket_name, :tenant, :marker, :bucket_id, :size, :size_rounded, :creation_time, :count, :placement_name,           :placement_storage_class, :user_id, :flags, :zonegroup, :has_instance_obj, :quota, :requester_pays, :has_website, :website_conf,           :swift_versioning, :swift_ver_location, :mdsearch_config, :new_bucket_instance_id, :obj_lock, :sync_policy_info_groups, :bucket_attrs, :bucket_vers, :bucket_ver_tag, :mtime)) stmt(0x7fb70802b088)
+2023-09-21T15:19:25.204+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:user_id) in stmt(0x7fb70802b088) is 11
+2023-09-21T15:19:25.204+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:bucket_name) in stmt(0x7fb70802b088) is 1
+2023-09-21T15:19:25.204+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:tenant) in stmt(0x7fb70802b088) is 2
+2023-09-21T15:19:25.204+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:marker) in stmt(0x7fb70802b088) is 3
+2023-09-21T15:19:25.204+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:bucket_id) in stmt(0x7fb70802b088) is 4
+2023-09-21T15:19:25.204+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:size) in stmt(0x7fb70802b088) is 5
+2023-09-21T15:19:25.204+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:size_rounded) in stmt(0x7fb70802b088) is 6
+2023-09-21T15:19:25.204+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:creation_time) in stmt(0x7fb70802b088) is 7
+2023-09-21T15:19:25.204+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:count) in stmt(0x7fb70802b088) is 8
+2023-09-21T15:19:25.204+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:placement_name) in stmt(0x7fb70802b088) is 9
+2023-09-21T15:19:25.204+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:placement_storage_class) in stmt(0x7fb70802b088) is 10
+2023-09-21T15:19:25.204+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:flags) in stmt(0x7fb70802b088) is 12
+2023-09-21T15:19:25.204+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:zonegroup) in stmt(0x7fb70802b088) is 13
+2023-09-21T15:19:25.204+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:has_instance_obj) in stmt(0x7fb70802b088) is 14
+2023-09-21T15:19:25.204+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:quota) in stmt(0x7fb70802b088) is 15
+2023-09-21T15:19:25.204+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:requester_pays) in stmt(0x7fb70802b088) is 16
+2023-09-21T15:19:25.204+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:has_website) in stmt(0x7fb70802b088) is 17
+2023-09-21T15:19:25.204+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:website_conf) in stmt(0x7fb70802b088) is 18
+2023-09-21T15:19:25.204+0000 7fb714c52700 20 rgw DBStore backend: Successfully processed fop(InsertUser) 
+2023-09-21T15:19:25.204+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:swift_versioning) in stmt(0x7fb70802b088) is 19
+2023-09-21T15:19:25.204+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:swift_ver_location) in stmt(0x7fb70802b088) is 20
+2023-09-21T15:19:25.204+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:mdsearch_config) in stmt(0x7fb70802b088) is 21
+2023-09-21T15:19:25.204+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:new_bucket_instance_id) in stmt(0x7fb70802b088) is 22
+2023-09-21T15:19:25.204+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:obj_lock) in stmt(0x7fb70802b088) is 23
+2023-09-21T15:19:25.204+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:sync_policy_info_groups) in stmt(0x7fb70802b088) is 24
+2023-09-21T15:19:25.204+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:bucket_attrs) in stmt(0x7fb70802b088) is 25
+2023-09-21T15:19:25.204+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:bucket_vers) in stmt(0x7fb70802b088) is 26
+2023-09-21T15:19:25.204+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:bucket_ver_tag) in stmt(0x7fb70802b088) is 27
+2023-09-21T15:19:25.204+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:mtime) in stmt(0x7fb70802b088) is 28
+2023-09-21T15:19:25.204+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:user_id) in stmt(0x7fb708004fc8) is 1
+2023-09-21T15:19:25.248+0000 7fb715453700 20 rgw DBStore backend: sqlite step successfully executed for stmt(0x7fb70802b088)  ret = 101
+2023-09-21T15:19:25.248+0000 7fb715453700 20 rgw DBStore backend: Successfully processed fop(InsertBucket) 
+2023-09-21T15:19:25.248+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:tenant) in stmt(0x7fb708003af8) is 2
+2023-09-21T15:19:25.248+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:user_id) in stmt(0x7fb708003af8) is 1
+2023-09-21T15:19:25.248+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:ns) in stmt(0x7fb708003af8) is 3
+2023-09-21T15:19:25.248+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:display_name) in stmt(0x7fb708003af8) is 4
+2023-09-21T15:19:25.248+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:user_email) in stmt(0x7fb708003af8) is 5
+2023-09-21T15:19:25.248+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:access_keys_id) in stmt(0x7fb708003af8) is 6
+2023-09-21T15:19:25.248+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:access_keys_secret) in stmt(0x7fb708003af8) is 7
+2023-09-21T15:19:25.248+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:access_keys) in stmt(0x7fb708003af8) is 8
+2023-09-21T15:19:25.248+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:swift_keys) in stmt(0x7fb708003af8) is 9
+2023-09-21T15:19:25.248+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:subusers) in stmt(0x7fb708003af8) is 10
+2023-09-21T15:19:25.248+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:suspended) in stmt(0x7fb708003af8) is 11
+2023-09-21T15:19:25.248+0000 7fb714c52700 20 rgw DBStore backend: sqlite step successfully executed for stmt(0x7fb708004fc8)  ret = 101
+2023-09-21T15:19:25.248+0000 7fb714c52700 20 rgw DBStore backend: Successfully processed fop(GetUser) 
+2023-09-21T15:19:25.248+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:max_buckets) in stmt(0x7fb708003af8) is 12
+2023-09-21T15:19:25.248+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:op_mask) in stmt(0x7fb708003af8) is 13
+2023-09-21T15:19:25.248+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:user_caps) in stmt(0x7fb708003af8) is 14
+2023-09-21T15:19:25.248+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:admin) in stmt(0x7fb708003af8) is 15
+2023-09-21T15:19:25.248+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:system) in stmt(0x7fb708003af8) is 16
+2023-09-21T15:19:25.248+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:placement_name) in stmt(0x7fb708003af8) is 17
+2023-09-21T15:19:25.248+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:placement_storage_class) in stmt(0x7fb708003af8) is 18
+2023-09-21T15:19:25.248+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:placement_tags) in stmt(0x7fb708003af8) is 19
+2023-09-21T15:19:25.248+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:bucket_quota) in stmt(0x7fb708003af8) is 20
+2023-09-21T15:19:25.248+0000 7fb714c52700 20 rgw DBStore backend: Objectmap entry already exists for bucket(rgw). Not inserted 
+2023-09-21T15:19:25.248+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:temp_url_keys) in stmt(0x7fb708003af8) is 21
+2023-09-21T15:19:25.248+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:user_quota) in stmt(0x7fb708003af8) is 22
+2023-09-21T15:19:25.248+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:type) in stmt(0x7fb708003af8) is 23
+2023-09-21T15:19:25.248+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:user_id) in stmt(0x7fb70802b088) is 11
+2023-09-21T15:19:25.248+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:bucket_name) in stmt(0x7fb70802b088) is 1
+2023-09-21T15:19:25.248+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:mfa_ids) in stmt(0x7fb708003af8) is 24
+2023-09-21T15:19:25.248+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:tenant) in stmt(0x7fb70802b088) is 2
+2023-09-21T15:19:25.248+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:marker) in stmt(0x7fb70802b088) is 3
+2023-09-21T15:19:25.248+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:bucket_id) in stmt(0x7fb70802b088) is 4
+2023-09-21T15:19:25.248+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:size) in stmt(0x7fb70802b088) is 5
+2023-09-21T15:19:25.248+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:size_rounded) in stmt(0x7fb70802b088) is 6
+2023-09-21T15:19:25.248+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:creation_time) in stmt(0x7fb70802b088) is 7
+2023-09-21T15:19:25.248+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:assumed_role_arn) in stmt(0x7fb708003af8) is 25
+2023-09-21T15:19:25.248+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:user_attrs) in stmt(0x7fb708003af8) is 26
+2023-09-21T15:19:25.248+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:count) in stmt(0x7fb70802b088) is 8
+2023-09-21T15:19:25.248+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:placement_name) in stmt(0x7fb70802b088) is 9
+2023-09-21T15:19:25.248+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:user_vers) in stmt(0x7fb708003af8) is 27
+2023-09-21T15:19:25.248+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:placement_storage_class) in stmt(0x7fb70802b088) is 10
+2023-09-21T15:19:25.248+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:flags) in stmt(0x7fb70802b088) is 12
+2023-09-21T15:19:25.248+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:user_ver_tag) in stmt(0x7fb708003af8) is 28
+2023-09-21T15:19:25.248+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:zonegroup) in stmt(0x7fb70802b088) is 13
+2023-09-21T15:19:25.272+0000 7fb715453700 20 rgw DBStore backend: sqlite step successfully executed for stmt(0x7fb708003af8)  ret = 101
+2023-09-21T15:19:25.272+0000 7fb715453700 20 rgw DBStore backend: Successfully processed fop(InsertUser) 
+2023-09-21T15:19:25.272+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:has_instance_obj) in stmt(0x7fb70802b088) is 14
+2023-09-21T15:19:25.272+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:quota) in stmt(0x7fb70802b088) is 15
+2023-09-21T15:19:25.272+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:requester_pays) in stmt(0x7fb70802b088) is 16
+2023-09-21T15:19:25.272+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:has_website) in stmt(0x7fb70802b088) is 17
+2023-09-21T15:19:25.272+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:website_conf) in stmt(0x7fb70802b088) is 18
+2023-09-21T15:19:25.272+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:swift_versioning) in stmt(0x7fb70802b088) is 19
+2023-09-21T15:19:25.272+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:swift_ver_location) in stmt(0x7fb70802b088) is 20
+2023-09-21T15:19:25.272+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:mdsearch_config) in stmt(0x7fb70802b088) is 21
+2023-09-21T15:19:25.272+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:new_bucket_instance_id) in stmt(0x7fb70802b088) is 22
+2023-09-21T15:19:25.272+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:obj_lock) in stmt(0x7fb70802b088) is 23
+2023-09-21T15:19:25.272+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:sync_policy_info_groups) in stmt(0x7fb70802b088) is 24
+2023-09-21T15:19:25.272+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:bucket_attrs) in stmt(0x7fb70802b088) is 25
+2023-09-21T15:19:25.272+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:bucket_vers) in stmt(0x7fb70802b088) is 26
+2023-09-21T15:19:25.272+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:bucket_ver_tag) in stmt(0x7fb70802b088) is 27
+2023-09-21T15:19:25.272+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:mtime) in stmt(0x7fb70802b088) is 28
+2023-09-21T15:19:25.300+0000 7fb714c52700 20 rgw DBStore backend: sqlite step successfully executed for stmt(0x7fb70802b088)  ret = 101
+2023-09-21T15:19:25.300+0000 7fb714c52700 20 rgw DBStore backend: Successfully processed fop(InsertBucket) 
+2023-09-21T15:19:25.300+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:tenant) in stmt(0x7fb708003af8) is 2
+2023-09-21T15:19:25.300+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:user_id) in stmt(0x7fb708003af8) is 1
+2023-09-21T15:19:25.300+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:ns) in stmt(0x7fb708003af8) is 3
+2023-09-21T15:19:25.300+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:display_name) in stmt(0x7fb708003af8) is 4
+2023-09-21T15:19:25.300+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:user_email) in stmt(0x7fb708003af8) is 5
+2023-09-21T15:19:25.300+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:access_keys_id) in stmt(0x7fb708003af8) is 6
+2023-09-21T15:19:25.300+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:access_keys_secret) in stmt(0x7fb708003af8) is 7
+2023-09-21T15:19:25.300+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:access_keys) in stmt(0x7fb708003af8) is 8
+2023-09-21T15:19:25.300+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:swift_keys) in stmt(0x7fb708003af8) is 9
+2023-09-21T15:19:25.300+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:subusers) in stmt(0x7fb708003af8) is 10
+2023-09-21T15:19:25.300+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:suspended) in stmt(0x7fb708003af8) is 11
+2023-09-21T15:19:25.300+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:max_buckets) in stmt(0x7fb708003af8) is 12
+2023-09-21T15:19:25.300+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:op_mask) in stmt(0x7fb708003af8) is 13
+2023-09-21T15:19:25.300+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:user_caps) in stmt(0x7fb708003af8) is 14
+2023-09-21T15:19:25.300+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:admin) in stmt(0x7fb708003af8) is 15
+2023-09-21T15:19:25.300+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:system) in stmt(0x7fb708003af8) is 16
+2023-09-21T15:19:25.300+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:placement_name) in stmt(0x7fb708003af8) is 17
+2023-09-21T15:19:25.300+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:placement_storage_class) in stmt(0x7fb708003af8) is 18
+2023-09-21T15:19:25.300+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:placement_tags) in stmt(0x7fb708003af8) is 19
+2023-09-21T15:19:25.300+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:bucket_quota) in stmt(0x7fb708003af8) is 20
+2023-09-21T15:19:25.300+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:temp_url_keys) in stmt(0x7fb708003af8) is 21
+2023-09-21T15:19:25.300+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:user_quota) in stmt(0x7fb708003af8) is 22
+2023-09-21T15:19:25.300+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:type) in stmt(0x7fb708003af8) is 23
+2023-09-21T15:19:25.300+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:mfa_ids) in stmt(0x7fb708003af8) is 24
+2023-09-21T15:19:25.300+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:assumed_role_arn) in stmt(0x7fb708003af8) is 25
+2023-09-21T15:19:25.300+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:user_attrs) in stmt(0x7fb708003af8) is 26
+2023-09-21T15:19:25.300+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:user_vers) in stmt(0x7fb708003af8) is 27
+2023-09-21T15:19:25.300+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:user_id) in stmt(0x7fb70802b088) is 11
+2023-09-21T15:19:25.300+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:user_ver_tag) in stmt(0x7fb708003af8) is 28
+2023-09-21T15:19:25.300+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:bucket_name) in stmt(0x7fb70802b088) is 1
+2023-09-21T15:19:25.300+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:tenant) in stmt(0x7fb70802b088) is 2
+2023-09-21T15:19:25.344+0000 7fb714c52700 20 rgw DBStore backend: sqlite step successfully executed for stmt(0x7fb708003af8)  ret = 101
+2023-09-21T15:19:25.344+0000 7fb714c52700 20 rgw DBStore backend: Successfully processed fop(InsertUser) 
+2023-09-21T15:19:25.344+0000 7fb714c52700 20 rgw DBStore backend: Objectmap entry already exists for bucket(gluster). Not inserted 
+2023-09-21T15:19:25.344+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:marker) in stmt(0x7fb70802b088) is 3
+2023-09-21T15:19:25.344+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:bucket_id) in stmt(0x7fb70802b088) is 4
+2023-09-21T15:19:25.344+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:size) in stmt(0x7fb70802b088) is 5
+2023-09-21T15:19:25.344+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:size_rounded) in stmt(0x7fb70802b088) is 6
+2023-09-21T15:19:25.344+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:creation_time) in stmt(0x7fb70802b088) is 7
+2023-09-21T15:19:25.344+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:count) in stmt(0x7fb70802b088) is 8
+2023-09-21T15:19:25.344+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:placement_name) in stmt(0x7fb70802b088) is 9
+2023-09-21T15:19:25.344+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:placement_storage_class) in stmt(0x7fb70802b088) is 10
+2023-09-21T15:19:25.344+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:flags) in stmt(0x7fb70802b088) is 12
+2023-09-21T15:19:25.344+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:zonegroup) in stmt(0x7fb70802b088) is 13
+2023-09-21T15:19:25.344+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:has_instance_obj) in stmt(0x7fb70802b088) is 14
+2023-09-21T15:19:25.344+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:quota) in stmt(0x7fb70802b088) is 15
+2023-09-21T15:19:25.344+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:requester_pays) in stmt(0x7fb70802b088) is 16
+2023-09-21T15:19:25.344+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:has_website) in stmt(0x7fb70802b088) is 17
+2023-09-21T15:19:25.344+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:website_conf) in stmt(0x7fb70802b088) is 18
+2023-09-21T15:19:25.344+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:swift_versioning) in stmt(0x7fb70802b088) is 19
+2023-09-21T15:19:25.344+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:swift_ver_location) in stmt(0x7fb70802b088) is 20
+2023-09-21T15:19:25.344+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:mdsearch_config) in stmt(0x7fb70802b088) is 21
+2023-09-21T15:19:25.344+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:new_bucket_instance_id) in stmt(0x7fb70802b088) is 22
+2023-09-21T15:19:25.344+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:obj_lock) in stmt(0x7fb70802b088) is 23
+2023-09-21T15:19:25.344+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:sync_policy_info_groups) in stmt(0x7fb70802b088) is 24
+2023-09-21T15:19:25.344+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:bucket_attrs) in stmt(0x7fb70802b088) is 25
+2023-09-21T15:19:25.344+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:bucket_vers) in stmt(0x7fb70802b088) is 26
+2023-09-21T15:19:25.344+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:bucket_ver_tag) in stmt(0x7fb70802b088) is 27
+2023-09-21T15:19:25.344+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:mtime) in stmt(0x7fb70802b088) is 28
+2023-09-21T15:19:25.384+0000 7fb715453700 20 rgw DBStore backend: sqlite step successfully executed for stmt(0x7fb70802b088)  ret = 101
+2023-09-21T15:19:25.384+0000 7fb715453700 20 rgw DBStore backend: Successfully processed fop(InsertBucket) 
+2023-09-21T15:19:25.384+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:user_id) in stmt(0x7fb708004fc8) is 1
+2023-09-21T15:19:25.384+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:user_id) in stmt(0x7fb70802b088) is 11
+2023-09-21T15:19:25.384+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:bucket_name) in stmt(0x7fb70802b088) is 1
+2023-09-21T15:19:25.384+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:tenant) in stmt(0x7fb70802b088) is 2
+2023-09-21T15:19:25.384+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:marker) in stmt(0x7fb70802b088) is 3
+2023-09-21T15:19:25.384+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:bucket_id) in stmt(0x7fb70802b088) is 4
+2023-09-21T15:19:25.384+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:size) in stmt(0x7fb70802b088) is 5
+2023-09-21T15:19:25.384+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:size_rounded) in stmt(0x7fb70802b088) is 6
+2023-09-21T15:19:25.384+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:creation_time) in stmt(0x7fb70802b088) is 7
+2023-09-21T15:19:25.384+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:count) in stmt(0x7fb70802b088) is 8
+2023-09-21T15:19:25.384+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:placement_name) in stmt(0x7fb70802b088) is 9
+2023-09-21T15:19:25.384+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:placement_storage_class) in stmt(0x7fb70802b088) is 10
+2023-09-21T15:19:25.384+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:flags) in stmt(0x7fb70802b088) is 12
+2023-09-21T15:19:25.384+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:zonegroup) in stmt(0x7fb70802b088) is 13
+2023-09-21T15:19:25.384+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:has_instance_obj) in stmt(0x7fb70802b088) is 14
+2023-09-21T15:19:25.384+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:quota) in stmt(0x7fb70802b088) is 15
+2023-09-21T15:19:25.384+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:requester_pays) in stmt(0x7fb70802b088) is 16
+2023-09-21T15:19:25.384+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:has_website) in stmt(0x7fb70802b088) is 17
+2023-09-21T15:19:25.384+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:website_conf) in stmt(0x7fb70802b088) is 18
+2023-09-21T15:19:25.384+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:swift_versioning) in stmt(0x7fb70802b088) is 19
+2023-09-21T15:19:25.384+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:swift_ver_location) in stmt(0x7fb70802b088) is 20
+2023-09-21T15:19:25.384+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:mdsearch_config) in stmt(0x7fb70802b088) is 21
+2023-09-21T15:19:25.384+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:new_bucket_instance_id) in stmt(0x7fb70802b088) is 22
+2023-09-21T15:19:25.384+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:obj_lock) in stmt(0x7fb70802b088) is 23
+2023-09-21T15:19:25.384+0000 7fb715453700 20 rgw DBStore backend: sqlite step successfully executed for stmt(0x7fb708004fc8)  ret = 101
+2023-09-21T15:19:25.384+0000 7fb715453700 20 rgw DBStore backend: Successfully processed fop(GetUser) 
+2023-09-21T15:19:25.384+0000 7fb715453700 20 rgw DBStore backend: Objectmap entry already exists for bucket(gluster). Not inserted 
+2023-09-21T15:19:25.384+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:sync_policy_info_groups) in stmt(0x7fb70802b088) is 24
+2023-09-21T15:19:25.384+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:bucket_attrs) in stmt(0x7fb70802b088) is 25
+2023-09-21T15:19:25.384+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:bucket_vers) in stmt(0x7fb70802b088) is 26
+2023-09-21T15:19:25.384+0000 7fb715453700 20 rgw DBStore backend: Successfully Prepared stmt for Op(PrepareGetBucket) schema(SELECT                            BucketName, BucketTable.Tenant, Marker, BucketID, Size, SizeRounded, CreationTime,                           Count, BucketTable.PlacementName, BucketTable.PlacementStorageClass, OwnerID, Flags, Zonegroup,                           HasInstanceObj, Quota, RequesterPays, HasWebsite, WebsiteConf,                           SwiftVersioning, SwiftVerLocation,                           MdsearchConfig, NewBucketInstanceID, ObjectLock,                           SyncPolicyInfoGroups, BucketAttrs, BucketVersion, BucketVersionTag, Mtime, NS                           from 'Redhat.bucket.table' as BucketTable INNER JOIN 'Redhat.user.table' ON OwnerID = UserID where BucketName = :bucket_name) stmt(0x7fb708055ca8)
+2023-09-21T15:19:25.384+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:bucket_name) in stmt(0x7fb708055ca8) is 1
+2023-09-21T15:19:25.384+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:bucket_ver_tag) in stmt(0x7fb70802b088) is 27
+2023-09-21T15:19:25.384+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:mtime) in stmt(0x7fb70802b088) is 28
+2023-09-21T15:19:25.384+0000 7fb715453700 20 rgw DBStore backend: sqlite step successfully executed for stmt(0x7fb708055ca8)  ret = 101
+2023-09-21T15:19:25.384+0000 7fb715453700 20 rgw DBStore backend: Successfully processed fop(GetBucket) 
+2023-09-21T15:19:25.384+0000 7fb715453700 10 rgw DBStore backend: sqlite exec successfully processed for schema(SELECT  * from 'Redhat.user.table')
+2023-09-21T15:19:25.384+0000 7fb715453700 20 rgw DBStore backend: GetUserTable suceeded 
+2023-09-21T15:19:25.388+0000 7fb715453700 10 rgw DBStore backend: sqlite exec successfully processed for schema(SELECT  * from 'Redhat.bucket.table')
+2023-09-21T15:19:25.388+0000 7fb715453700 20 rgw DBStore backend: ListbucketTable suceeded 
+2023-09-21T15:19:25.388+0000 7fb715453700 20 rgw DBStore backend: Successfully Prepared stmt for Op(PrepareRemoveBucket) schema(DELETE from 'Redhat.bucket.table' where BucketName = :bucket_name) stmt(0x7fb70804dfa8)
+2023-09-21T15:19:25.388+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:bucket_name) in stmt(0x7fb70804dfa8) is 1
+2023-09-21T15:19:25.412+0000 7fb715453700 20 rgw DBStore backend: sqlite step successfully executed for stmt(0x7fb70804dfa8)  ret = 101
+2023-09-21T15:19:25.412+0000 7fb715453700 20 rgw DBStore backend: Successfully processed fop(RemoveBucket) 
+2023-09-21T15:19:25.412+0000 7fb715453700 20 rgw DBStore backend: Successfully Prepared stmt for Op(PrepareRemoveUser) schema(DELETE from 'Redhat.user.table' where UserID = :user_id) stmt(0x7fb70804b478)
+2023-09-21T15:19:25.412+0000 7fb715453700 20 rgw DBStore backend: Bind parameter index for str(:user_id) in stmt(0x7fb70804b478) is 1
+2023-09-21T15:19:25.456+0000 7fb715453700 20 rgw DBStore backend: sqlite step successfully executed for stmt(0x7fb70804b478)  ret = 101
+2023-09-21T15:19:25.456+0000 7fb715453700 20 rgw DBStore backend: Successfully processed fop(RemoveUser) 
+2023-09-21T15:19:25.456+0000 7fb714c52700  0 rgw DBStore backend: sqlite step failed for stmt(0x7fb70802b088); Errmsg - FOREIGN KEY constraint failed
+2023-09-21T15:19:25.456+0000 7fb714c52700  0 rgw DBStore backend: Execution failed for stmt(0x7fb70802b088)
+2023-09-21T15:19:25.456+0000 7fb714c52700  0 rgw DBStore backend: In Process op Execute failed for fop(InsertBucket) 
+2023-09-21T15:19:25.456+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:user_id) in stmt(0x7fb708004fc8) is 1
+2023-09-21T15:19:25.456+0000 7fb715453700 10 rgw DBStore backend: sqlite exec successfully processed for schema(SELECT  * from 'Redhat.user.table')
+2023-09-21T15:19:25.456+0000 7fb715453700 20 rgw DBStore backend: GetUserTable suceeded 
+2023-09-21T15:19:25.456+0000 7fb715453700 10 rgw DBStore backend: sqlite exec successfully processed for schema(SELECT  * from 'Redhat.bucket.table')
+2023-09-21T15:19:25.456+0000 7fb715453700 20 rgw DBStore backend: ListbucketTable suceeded 
+2023-09-21T15:19:25.456+0000 7fb714c52700 20 rgw DBStore backend: sqlite step successfully executed for stmt(0x7fb708004fc8)  ret = 101
+2023-09-21T15:19:25.456+0000 7fb714c52700 20 rgw DBStore backend: Successfully processed fop(GetUser) 
+2023-09-21T15:19:25.456+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:bucket_name) in stmt(0x7fb708055ca8) is 1
+2023-09-21T15:19:25.456+0000 7fb714c52700 20 rgw DBStore backend: sqlite step successfully executed for stmt(0x7fb708055ca8)  ret = 101
+2023-09-21T15:19:25.456+0000 7fb714c52700 20 rgw DBStore backend: Successfully processed fop(GetBucket) 
+2023-09-21T15:19:25.456+0000 7fb714c52700 10 rgw DBStore backend: sqlite exec successfully processed for schema(SELECT  * from 'Redhat.user.table')
+2023-09-21T15:19:25.456+0000 7fb714c52700 20 rgw DBStore backend: GetUserTable suceeded 
+2023-09-21T15:19:25.456+0000 7fb714c52700 10 rgw DBStore backend: sqlite exec successfully processed for schema(SELECT  * from 'Redhat.bucket.table')
+2023-09-21T15:19:25.456+0000 7fb714c52700 20 rgw DBStore backend: ListbucketTable suceeded 
+2023-09-21T15:19:25.456+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:bucket_name) in stmt(0x7fb70804dfa8) is 1
+2023-09-21T15:19:25.456+0000 7fb714c52700 20 rgw DBStore backend: sqlite step successfully executed for stmt(0x7fb70804dfa8)  ret = 101
+2023-09-21T15:19:25.456+0000 7fb714c52700 20 rgw DBStore backend: Successfully processed fop(RemoveBucket) 
+2023-09-21T15:19:25.456+0000 7fb714c52700 20 rgw DBStore backend: Bind parameter index for str(:user_id) in stmt(0x7fb70804b478) is 1
+2023-09-21T15:19:25.456+0000 7fb714c52700 20 rgw DBStore backend: sqlite step successfully executed for stmt(0x7fb70804b478)  ret = 101
+2023-09-21T15:19:25.456+0000 7fb714c52700 20 rgw DBStore backend: Successfully processed fop(RemoveUser) 
+2023-09-21T15:19:25.456+0000 7fb714c52700 10 rgw DBStore backend: sqlite exec successfully processed for schema(SELECT  * from 'Redhat.user.table')
+2023-09-21T15:19:25.456+0000 7fb714c52700 20 rgw DBStore backend: GetUserTable suceeded 
+2023-09-21T15:19:25.456+0000 7fb714c52700 10 rgw DBStore backend: sqlite exec successfully processed for schema(SELECT  * from 'Redhat.bucket.table')
+2023-09-21T15:19:25.456+0000 7fb714c52700 20 rgw DBStore backend: ListbucketTable suceeded 
+2023-09-21T15:19:25.456+0000 7fb71a919e40 20 rgw DBStore backend: DB successfully destroyed - name:Redhat

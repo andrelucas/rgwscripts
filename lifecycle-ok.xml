@@ -1,0 +1,16 @@
+<LifecycleConfiguration>
+    <Rule>
+        <ID>ExampleRule</ID>
+        <Filter>
+           <Prefix>documents/</Prefix>
+        </Filter>
+        <Status>Enabled</Status>
+        <Transition>        
+           <Days>365</Days>        
+           <StorageClass>GLACIER</StorageClass>
+        </Transition>    
+        <Expiration>
+             <Days>3650</Days>
+        </Expiration>
+    </Rule>
+</LifecycleConfiguration>

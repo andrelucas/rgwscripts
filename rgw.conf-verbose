@@ -1,0 +1,54 @@
+[client]
+
+run_dir			= /home/andre/rgw/run
+rgw_data		= /home/andre/rgw/data/$cluster-$id
+
+rgw_backend_store	= dbstore
+rgw_frontends		= beast port=8000
+
+rgw_dns_name		= amygdala-ub03.home.ae-35.com
+
+rgw_op_thread_timeout	= 30s
+
+rgw_thread_pool_size	= 512
+rgw_obj_stripe_size	= 4Mi
+
+rgw_curl_wait_timeout_ms	= 1000
+
+rgw_verify_ssl		= false
+
+rgw_max_chunk_size	= 4Mi
+
+rgw_s3_auth_use_ldap	= false
+
+rgw_log_nonexistent_bucket	= true
+rgw_log_object_name_utc		= true
+rgw_enable_ops_log		= false
+rgw_enable_usage_log		= true
+# This isn't the default - interesting.
+rgw_opt_log_rados		= false
+
+#rgw_crypt_s3_kms_backend	= vault
+#rgw_crypt_vault_auth		= token
+#rgw_crypt_vault_token_file	=
+#rgw_crypt_vault_addr		=
+#rgw_crypt_vault_prefix		=
+#rgw_crypt_vault_namespace	=
+
+#rgw_crypt_sse_s3_backend	= vault
+#rgw_crypt_sse_s3_vault_secret_engine	= transit
+#rgw_crypt_sse_s3_key_template	= %bucket_id
+# ... auth, token_file, addr, prefix, namespace
+#rgw_crypt_sse_s3_vault_verify_ssl	=
+#rgw_crypt_sse_s3_vault_ssl_cacert	=
+#rgw_crypt_sse_s3_vault_ssl_clientcert	=
+#rgw_crypt_sse_s3_vault_ssl_clientkey	=
+
+## Tuning
+
+rgw_max_concurrent_requests	= 1024
+# {throttler, dmclock}
+rgw_scheduler_type		= throttler
+# dmclock options
+
+

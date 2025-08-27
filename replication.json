@@ -1,0 +1,14 @@
+{
+  "Role": "arn:aws:iam::123456789012:role/replication-role",
+  "Rules": [
+    {
+      "ID": "rule1",
+      "Status": "Enabled",
+      "Prefix": "",
+      "Destination": {
+        "Bucket": "destination-bucket",
+        "StorageClass": "STANDARD"
+      }
+    }
+  ]
+}

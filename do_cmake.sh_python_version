@@ -1,0 +1,15 @@
+diff --git a/do_cmake.sh b/do_cmake.sh
+index 50274547fbf..17653156ea0 100755
+--- a/do_cmake.sh
++++ b/do_cmake.sh
+@@ -19,7 +19,9 @@ if [ -r /etc/os-release ]; then
+   source /etc/os-release
+   case "$ID" in
+       fedora)
+-          if [ "$VERSION_ID" -ge "35" ] ; then
++          if [ "$VERSION_ID" -ge "39" ]; then
++	    PYBUILD="3.12"
++          elif [ "$VERSION_ID" -ge "35" ] ; then
+             PYBUILD="3.10"
+           elif [ "$VERSION_ID" -ge "33" ] ; then
+             PYBUILD="3.9"
