@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-squrl="${SQURL:-http://localhost:8000}"
+squrl="${SQURL:-http://127.0.0.1:8000}"
 
 decode=0
 decode_token=0
@@ -115,7 +115,8 @@ function run() {
 function ntdecode() {
     # Decode the NextToken key if it exists.
     if [[ $decode_token -eq 1 ]]; then
-        jq 'if (.NextToken != null) then .NextToken |= @base64d else empty end'
+        jq 'if (.NextToken != null) then .NextToken |= @base64d else . end'
+
     else
         cat
     fi
