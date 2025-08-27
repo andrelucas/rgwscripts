@@ -9,23 +9,33 @@ abortonly=0
 count=100
 include_longkey=0
 maxjobs=200
+skip_abort=0
 versioning=0
 
 bucket="test"
 bucketurl="s3://$bucket"
 
 function usage() {
-    echo "Usage: $0 [-c count] [-j maxjobs] [-b bucket] [-V]" >&2
+    echo "Usage: $0 [-A][-n] [-c count] [-j maxjobs] [-l] [-b bucket] [-V]" >&2
+    echo "Options:" >&2
+    echo "  -A            Abort only, do not create new uploads." >&2
+    echo "  -c count      Number of uploads to create (default: 100)." >&2
+    echo "  -j maxjobs    Maximum number of parallel jobs (default: 200)." >&2
+    echo "  -l            Include long key names for testing base64 encoding." >&2
+    echo "  -n            Don't abort existing multipart uploads." >&2
+    echo "  -b bucket     Specify the bucket name (default: test)." >&2
+    echo "  -V            Enable versioning on the bucket." >&2
     exit 1
 }
 
 # Parse command-line options
-while getopts "Ab:c:j:lV" opt; do
+while getopts "Ab:c:j:lnV" opt; do
     case $opt in
     A) abortonly=1 ;;
     c) count=$OPTARG ;;
     j) maxjobs=$OPTARG ;;
     l) include_longkey=1;;
+    n) skip_abort=1;;
     b) bucket=$OPTARG ;;
     V) versioning=1 ;;
     \?)
@@ -61,12 +71,15 @@ function abort() {
 }
 export -f abort
 
-# shellcheck disable=SC2086
-parallel --link -j"$maxjobs" -n2 "abort {1} {2}" ::: $ids ::: $keys
+if [[ $skip_abort -eq 0 ]]; then
+    # shellcheck disable=SC2086
+    echo "Aborting in-progress uploads"
+    parallel --link -j"$maxjobs" -n2 "abort {1} {2}" ::: $ids ::: $keys
 
-if [[ $abortonly -eq 1 ]]; then
-    echo "Stopping after aborting uploads"
-    exit 0
+    if [[ $abortonly -eq 1 ]]; then
+        echo "Stopping after aborting uploads"
+        exit 0
+    fi
 fi
 
 function longcreate() {
