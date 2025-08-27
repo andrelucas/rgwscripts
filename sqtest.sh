@@ -16,6 +16,14 @@ uripath="storequery/$version/$cmd"
 
 declare -a passes failures
 
+reshard=0
+stop_on_failure=1
+
+ver_single_single=1
+ver_single_multiple=1
+ver_paginated_single=1
+ver_paginated_multiversion=1
+nonver=1
 
 function get_object_counts_for_pagelen() {
     local pagelen="$1"
@@ -63,6 +71,14 @@ function pass() {
 function fail() {
     failures+=("$*")
     echo -e "\e[31mFAIL: $testname: $*\e[0m" >&2
+    if [[ stop_on_failure -eq 1 ]]; then
+        echo -e "\e[31mStopping on failure: $testname: $*\e[0m" >&2
+        exit 1
+    fi
+}
+
+function start() {
+    echo -e "\e[36mSTART: $*\e[0m"
 }
 
 function info() {
@@ -187,6 +203,17 @@ function delete_files() {
     parallel -j"$maxjobs" -n0 "s3cmd -q rm $bucketuri/tgtfile{#}" ::: $(seq 1 "$count")
 }
 
+function maybe_reshard() {
+    if [[ reshard -ne 1 ]]; then
+        return
+    fi
+    local bucket="$1"
+    if [[ -z "$bucket" ]]; then
+        error "Bucket name is required for maybe_reshard."
+    fi
+    ./racmd.sh reshard add --bucket "$bucket" --num-shards 100
+    ./racmd.sh reshard list --bucket "$bucket"    
+}
 
 function paginated_list_count() {
     local bucket="$1"
@@ -233,15 +260,18 @@ function versioned() {
     local bucket=testv
     local bucketuri=s3://"$bucket"
 
-    if true; then
+    if [[ ver_single_single -eq 1 ]]; then
         testname "Single file, single version"
         
         local pagelen=100
         for t in $(get_object_counts_for_pagelen $pagelen); do
 
+            start "Testing with $t object(s) in versioned bucket"
+            
             delete_bucket "$bucket" || true
             info "Creating versioned bucket: $bucket"
             s3cmd mb $bucketuri || error "Failed to create bucket $bucket"
+            maybe_reshard "$bucket"
             s3cmd setversioning $bucketuri enable || error "Failed to enable versioning on $bucket"
 
             info "Uploading $t object(s) to versioned bucket: $bucket"
@@ -267,7 +297,7 @@ function versioned() {
         done
     fi
     
-    if true; then
+    if [[ ver_single_multiple -eq 1 ]]; then
         testname "Single file, multiple versions"
         
         local pagelen=100
@@ -306,8 +336,8 @@ function versioned() {
             done
         done
     fi
-    
-    if true; then
+
+    if [[ ver_paginated_single -eq 1 ]]; then
         testname "Paginated lists of single-version objects in versioned bucket"
         
         local pagelen=10
@@ -322,15 +352,15 @@ function versioned() {
             
             len="$(paginated_list_count "$bucket" "$pagelen")"
             if [[ $len -ne $t ]]; then
-                fail "t=$t expected $t object(s) in versioned bucket, found $len"
+                fail "t=$t expected $t object(s) in paginated versioned bucket, found $len"
             else
                 pass "$len object(s) counted"
             fi
             
         done
     fi
-    
-    if true; then
+
+    if [[ ver_paginated_multiversion -eq 1 ]]; then
         testname "Paginated lists of deleted multiply-versioned objects in versioned bucket"
         
         local pagelen=10
@@ -356,7 +386,7 @@ function versioned() {
                 
                 len="$(paginated_list_count "$bucket" "$pagelen")"
                 if [[ $len -ne $t ]]; then
-                    fail "t=$t v=$v expected $t object(s) in versioned bucket, found $len"
+                    fail "t=$t v=$v expected $t object(s) in paginated multiply-versioned bucket, found $len"
                 else
                     pass "t=$t v=$v $len object(s) counted"
                 fi
@@ -370,7 +400,7 @@ function nonversioned() {
     local bucket=testnv
     local bucketuri=s3://"$bucket"
 
-    if true; then
+    if [[ nonver -eq 1 ]]; then
         testname "Single file, non-versioned bucket"
         local pagelen=100
         for t in $(get_object_counts_for_pagelen $pagelen); do
