@@ -1,6 +1,9 @@
+hosts
 bigfile
 bigfile-chunk*
 bigrand*
+smallfile
+test
 otel/collector-output.txt
 venv-*
 # Don't include the binary
