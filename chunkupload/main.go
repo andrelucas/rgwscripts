@@ -20,7 +20,7 @@ func createBigFile(name string) error {
 func main() {
 	ctx := context.Background()
 
-	endpoint := "amygdala-fe02.home.ae-35.com:8000"
+	endpoint := "ludwig-ub03.home.ae-35.com:8000"
 	accessKeyID := "0555b35654ad1656d804"
 	secretAccessKey := "h7GhxuBLTrlhVUyxSPUKUV8r/2EI4ngqJxD7iBdBYLhwluN30JaT3Q=="
 	useSSL := false
