@@ -21,7 +21,8 @@ import urllib.parse
 endpoint = urllib.parse.urlparse(sys.argv[1])
 bucket = sys.argv[2]
 port = f":{endpoint.port}" if endpoint.port else ""
-print(f"{endpoint.scheme}://{bucket}.{endpoint.hostname}{port}/")
+base_path = endpoint.path.rstrip("/")
+print(f"{endpoint.scheme}://{endpoint.hostname}{port}{base_path}/{bucket}")
 PY
 )
 
