@@ -182,11 +182,17 @@ def main():
         default="http://127.0.0.1:8000",
         help="Target endpoint URL, e.g. http://127.0.0.1:8000 or https://s3.example.com:443.",
     )
+    parser.add_argument("-v", "--verbose", action="store_true", help="Show upload progress details.")
     args = parser.parse_args()
 
     bucket, region, key = args.bucket, args.region, args.key
     size = args.size_bytes
     chunk_size = args.chunk_size
+    verbose = args.verbose
+
+    def vlog(msg: str):
+        if verbose:
+            print(f"[progress] {msg}", file=sys.stderr)
 
     if chunk_size <= 0:
         print("--chunk-size must be > 0", file=sys.stderr)
@@ -201,6 +207,7 @@ def main():
         sys.exit(2)
 
     path = "upload.bin"
+    vlog(f"creating payload file: {path} ({size} bytes)")
     with open(path, "wb") as f:
         f.write(os.urandom(size))
 
@@ -234,6 +241,11 @@ def main():
 
     checksum_header_name = "x-amz-checksum-crc32"
     content_length = aws_chunked_content_length(decoded_len, chunk_size, checksum_header_name, checksum_b64)
+    vlog(
+        "prepared request "
+        f"endpoint={args.endpoint} bucket={bucket} key={key} decoded_len={decoded_len} "
+        f"chunk_size={chunk_size} content_length={content_length}"
+    )
 
     extra_headers = {
         "content-encoding": "aws-chunked",
@@ -267,6 +279,7 @@ def main():
             ctx = ssl.create_default_context()
             sock = ctx.wrap_socket(sock, server_hostname=connect_host)
 
+        vlog(f"connecting to {connect_host}:{connect_port} (tls={use_tls})")
         sock.connect((connect_host, connect_port))
 
         sock.sendall(f"PUT {canonical_uri} HTTP/1.1\r\n".encode("utf-8"))
@@ -284,6 +297,9 @@ def main():
         sock.sendall(b"\r\n")
 
         previous_sig = seed_sig
+        sent_payload = 0
+        chunk_idx = 0
+        vlog("starting chunk upload")
 
         with open(path, "rb") as f:
             while True:
@@ -300,12 +316,19 @@ def main():
                 sock.sendall(prefix)
                 sock.sendall(data)
                 sock.sendall(b"\r\n")
+                chunk_idx += 1
+                sent_payload += len(data)
+                vlog(
+                    f"chunk {chunk_idx}: bytes={len(data)} total={sent_payload}/{decoded_len} "
+                    f"sig={sig[:16]}..."
+                )
 
         final_chunk_data_hash_hex = EMPTY_SHA256_HEX
         sts0 = chunk_string_to_sign(amz_date, scope, previous_sig, final_chunk_data_hash_hex)
         sig0 = hmac.new(sig_key, sts0.encode("utf-8"), hashlib.sha256).hexdigest()
         previous_sig = sig0
         sock.sendall(f"0;chunk-signature={sig0}\r\n".encode("utf-8"))
+        vlog(f"sent final zero chunk sig={sig0[:16]}...")
 
         trailer_line = f"{checksum_header_name}:{checksum_b64}\n".encode("utf-8")
         trailer_canon_hash_hex = sha256_hex(trailer_line)
@@ -319,6 +342,7 @@ def main():
             "\r\n"
         ).encode("utf-8")
         sock.sendall(trailers)
+        vlog(f"sent trailers checksum={checksum_b64} trailer_sig={trailer_sig[:16]}...")
 
         sock.shutdown(socket.SHUT_WR)
         response_data = b""
@@ -330,6 +354,7 @@ def main():
 
         response_str = response_data.decode("utf-8", errors="replace")
         lines = response_str.split("\r\n", 1)
+        vlog(f"received response bytes={len(response_data)}")
         print(lines[0])
         if len(lines) > 1:
             print(lines[1])

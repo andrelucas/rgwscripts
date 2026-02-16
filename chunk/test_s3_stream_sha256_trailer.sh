@@ -46,5 +46,6 @@ esac
 
 ./s3_stream_sha256_trailer.py \
 	--endpoint "$S3_ENDPOINT" \
+	-v \
 	--chunk-size "$S3_CHUNK_SIZE" \
 	"$S3_BUCKET" "$S3_REGION" "$S3_KEY" "$S3_SIZE_BYTES"
