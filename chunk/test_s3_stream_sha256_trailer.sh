@@ -6,7 +6,7 @@ set -euo pipefail
 : "${AWS_SECRET_ACCESS_KEY:=h7GhxuBLTrlhVUyxSPUKUV8r/2EI4ngqJxD7iBdBYLhwluN30JaT3Q==}"
 : "${S3_BUCKET:=testnv}"
 : "${S3_REGION:=us-east-1}"
-: "${S3_KEY:=obj}"
+: "${S3_KEY:=obj-sha256}"
 : "${S3_SIZE_BYTES:=100000}"
 : "${S3_CHUNK_SIZE:=65536}"
 : "${S3_ENDPOINT:=http://$(hostname -f):8000}"
@@ -43,7 +43,7 @@ case "$HTTP_CODE" in
 		;;
 esac
 
-./s3_stream_unsigned_trailer.py \
+./s3_stream_sha256_trailer.py \
 	--endpoint "$S3_ENDPOINT" \
 	--chunk-size "$S3_CHUNK_SIZE" \
 	"$S3_BUCKET" "$S3_REGION" "$S3_KEY" "$S3_SIZE_BYTES"
