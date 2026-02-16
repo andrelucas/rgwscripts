@@ -19,8 +19,8 @@ import base64
 import datetime as dt
 import hashlib
 import hmac
-import http.client
 import os
+import socket
 import ssl
 import sys
 import urllib.parse
@@ -146,6 +146,27 @@ def b64_crc32(data: bytes) -> str:
     return base64.b64encode(raw).decode("ascii")
 
 
+def aws_chunked_content_length(
+    decoded_len: int,
+    chunk_size: int,
+    checksum_header_name: str,
+    checksum_b64: str,
+) -> int:
+    def chunk_frame_len(data_len: int) -> int:
+        return len(f"{data_len:x};chunk-signature=") + 64 + 2 + data_len + 2
+
+    full_chunks, remainder = divmod(decoded_len, chunk_size)
+    total = full_chunks * chunk_frame_len(chunk_size)
+    if remainder:
+        total += chunk_frame_len(remainder)
+
+    total += len("0;chunk-signature=") + 64 + 2
+    total += len(f"{checksum_header_name}:{checksum_b64}\r\n")
+    total += len("x-amz-trailer-signature:") + 64 + 2
+    total += 2
+    return total
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Upload a generated file to S3 using SigV4 aws-chunked streaming with unsigned payload trailer."
@@ -155,6 +176,12 @@ def main():
     parser.add_argument("key")
     parser.add_argument("size_bytes", type=int)
     parser.add_argument(
+        "--chunk-size",
+        type=int,
+        default=64 * 1024,
+        help="AWS-chunked data chunk size in bytes (default: 65536).",
+    )
+    parser.add_argument(
         "--endpoint",
         default="http://127.0.0.1:8000",
         help="Target endpoint URL, e.g. http://127.0.0.1:8000 or https://s3.example.com:443.",
@@ -163,6 +190,11 @@ def main():
 
     bucket, region, key = args.bucket, args.region, args.key
     size = args.size_bytes
+    chunk_size = args.chunk_size
+
+    if chunk_size <= 0:
+        print("--chunk-size must be > 0", file=sys.stderr)
+        sys.exit(2)
 
     access_key = os.environ.get("AWS_ACCESS_KEY_ID")
     secret_key = os.environ.get("AWS_SECRET_ACCESS_KEY")
@@ -204,18 +236,20 @@ def main():
     key_path = "/".join([part for part in key.split("/") if part])
     canonical_uri = f"/{key_path}"
 
-    # We will use HTTP Transfer-Encoding: chunked (no Content-Length), but S3 requires decoded length header
+    # S3/rgw expects aws-chunked framing in the payload body itself.
+    # Send explicit Content-Length for the encoded aws-chunked stream.
     decoded_len = size
 
     # Unsigned streaming w/ trailer indicator:
     payload_hash_header_value = "STREAMING-UNSIGNED-PAYLOAD-TRAILER"
 
-    # Trailer headers we’ll send after the 0-size chunk
+    # Trailer headers we'll send after the 0-size chunk
     checksum_header_name = "x-amz-checksum-crc32"
+    content_length = aws_chunked_content_length(decoded_len, chunk_size, checksum_header_name, checksum_b64)
 
     extra_headers = {
         "content-encoding": "aws-chunked",
-        "transfer-encoding": "chunked",
+        "content-length": str(content_length),
         "x-amz-decoded-content-length": str(decoded_len),
         "x-amz-sdk-checksum-algorithm": "CRC32",
         "x-amz-trailer": checksum_header_name,
@@ -240,88 +274,89 @@ def main():
     seed_sig = auth.split("Signature=", 1)[1]
     scope = f"{date_scope}/{region}/s3/aws4_request"
 
-    # 3) Send request
-    if use_tls:
-        ctx = ssl.create_default_context()
-        conn = http.client.HTTPSConnection(connect_host, connect_port, context=ctx)
-    else:
-        conn = http.client.HTTPConnection(connect_host, connect_port)
+    # 3) Send request using raw socket for full control
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    try:
+        if use_tls:
+            ctx = ssl.create_default_context()
+            sock = ctx.wrap_socket(sock, server_hostname=connect_host)
+        
+        sock.connect((connect_host, connect_port))
+        
+        # Send HTTP request line and headers
+        sock.sendall(f"PUT {canonical_uri} HTTP/1.1\r\n".encode("utf-8"))
+        sock.sendall(f"Host: {host}\r\n".encode("utf-8"))
+        sock.sendall(f"x-amz-date: {amz_date}\r\n".encode("utf-8"))
+        sock.sendall(f"x-amz-content-sha256: {payload_hash_header_value}\r\n".encode("utf-8"))
+        sock.sendall(b"Content-Encoding: aws-chunked\r\n")
+        sock.sendall(f"Content-Length: {content_length}\r\n".encode("utf-8"))
+        sock.sendall(f"x-amz-decoded-content-length: {decoded_len}\r\n".encode("utf-8"))
+        sock.sendall(b"x-amz-sdk-checksum-algorithm: CRC32\r\n")
+        sock.sendall(f"x-amz-trailer: {checksum_header_name}\r\n".encode("utf-8"))
+        if session_token:
+            sock.sendall(f"x-amz-security-token: {session_token}\r\n".encode("utf-8"))
+        sock.sendall(f"Authorization: {auth}\r\n".encode("utf-8"))
+        sock.sendall(b"\r\n")  # End of headers
 
-    # http.client wants normal header casing; we’ll just title-case a few
-    def send_header(k: str, v: str):
-        conn.putheader(k, v)
+        # Stream file in chunks, creating aws-chunked metadata and chunk signatures.
+        # For the "UNSIGNED" variant, we deliberately avoid hashing the chunk bytes into the
+        # last line of the chunk string-to-sign, using the literal UNSIGNED-PAYLOAD.
+        previous_sig = seed_sig
 
-    conn.putrequest("PUT", canonical_uri)
+        with open(path, "rb") as f:
+            while True:
+                data = f.read(chunk_size)
+                if not data:
+                    break
 
-    # Host must be first-ish
-    send_header("Host", host)
-    send_header("x-amz-date", amz_date)
-    send_header("x-amz-content-sha256", payload_hash_header_value)
-    send_header("Content-Encoding", "aws-chunked")
-    send_header("Transfer-Encoding", "chunked")
-    send_header("x-amz-decoded-content-length", str(decoded_len))
-    send_header("x-amz-sdk-checksum-algorithm", "CRC32")
-    send_header("x-amz-trailer", checksum_header_name)
-    if session_token:
-        send_header("x-amz-security-token", session_token)
-    send_header("Authorization", auth)
+                chunk_data_hash_hex = "UNSIGNED-PAYLOAD"
+                sts = chunk_string_to_sign(amz_date, scope, previous_sig, chunk_data_hash_hex)
+                sig = hmac.new(sig_key, sts.encode("utf-8"), hashlib.sha256).hexdigest()
+                previous_sig = sig
 
-    conn.endheaders()
+                prefix = f"{len(data):x};chunk-signature={sig}\r\n".encode("utf-8")
+                sock.sendall(prefix)
+                sock.sendall(data)
+                sock.sendall(b"\r\n")
 
-    # Stream file in chunks, creating aws-chunked metadata and chunk signatures.
-    # For the “UNSIGNED” variant, we deliberately avoid hashing the chunk bytes into the
-    # last line of the chunk string-to-sign, using the literal UNSIGNED-PAYLOAD.
-    #
-    # (This matches the idea of "unsigned payload" modes; S3 can still verify the *request*
-    # signature and the trailing checksum header.)
-    previous_sig = seed_sig
-    chunk_size = 64 * 1024
+        # Final 0-size chunk (with signature extension)
+        final_chunk_data_hash_hex = "UNSIGNED-PAYLOAD"
+        sts0 = chunk_string_to_sign(amz_date, scope, previous_sig, final_chunk_data_hash_hex)
+        sig0 = hmac.new(sig_key, sts0.encode("utf-8"), hashlib.sha256).hexdigest()
+        previous_sig = sig0
+        sock.sendall(f"0;chunk-signature={sig0}\r\n".encode("utf-8"))
 
-    with open(path, "rb") as f:
+        # HTTP trailers: checksum header + trailer signature
+        trailer_line = f"{checksum_header_name}:{checksum_b64}\n".encode("utf-8")
+        trailer_canon_hash_hex = sha256_hex(trailer_line)
+
+        tsts = trailer_string_to_sign(amz_date, scope, previous_sig, trailer_canon_hash_hex)
+        trailer_sig = hmac.new(sig_key, tsts.encode("utf-8"), hashlib.sha256).hexdigest()
+
+        trailers = (
+            f"{checksum_header_name}:{checksum_b64}\r\n"
+            f"x-amz-trailer-signature:{trailer_sig}\r\n"
+            "\r\n"
+        ).encode("utf-8")
+        sock.sendall(trailers)
+
+        # Read response
+        sock.shutdown(socket.SHUT_WR)
+        response_data = b""
         while True:
-            data = f.read(chunk_size)
-            if not data:
+            chunk = sock.recv(4096)
+            if not chunk:
                 break
-
-            chunk_data_hash_hex = "UNSIGNED-PAYLOAD"
-            sts = chunk_string_to_sign(amz_date, scope, previous_sig, chunk_data_hash_hex)
-            sig = hmac.new(sig_key, sts.encode("utf-8"), hashlib.sha256).hexdigest()
-            previous_sig = sig
-
-            prefix = f"{len(data):x};chunk-signature={sig}\r\n".encode("utf-8")
-            conn.send(prefix)
-            conn.send(data)
-            conn.send(b"\r\n")
-
-    # Final 0-size chunk (with signature extension)
-    final_chunk_data_hash_hex = "UNSIGNED-PAYLOAD"
-    sts0 = chunk_string_to_sign(amz_date, scope, previous_sig, final_chunk_data_hash_hex)
-    sig0 = hmac.new(sig_key, sts0.encode("utf-8"), hashlib.sha256).hexdigest()
-    previous_sig = sig0
-    conn.send(f"0;chunk-signature={sig0}\r\n\r\n".encode("utf-8"))
-
-    # HTTP trailers: checksum header + trailer signature
-    # Canonicalize per AWS doc: 'header-name:base64\n' then sha256, then sign with AWS4-HMAC-SHA256-TRAILER
-    trailer_line = f"{checksum_header_name}:{checksum_b64}\n".encode("utf-8")
-    trailer_canon_hash_hex = sha256_hex(trailer_line)
-
-    tsts = trailer_string_to_sign(amz_date, scope, previous_sig, trailer_canon_hash_hex)
-    trailer_sig = hmac.new(sig_key, tsts.encode("utf-8"), hashlib.sha256).hexdigest()
-
-    trailers = (
-        f"{checksum_header_name}:{checksum_b64}\r\n"
-        f"x-amz-trailer-signature:{trailer_sig}\r\n"
-        "\r\n"
-    ).encode("utf-8")
-    conn.send(trailers)
-
-    resp = conn.getresponse()
-    body = resp.read()
-    print(f"HTTP {resp.status} {resp.reason}")
-    if body:
-        print(body.decode("utf-8", errors="replace"))
-
-    conn.close()
+            response_data += chunk
+        
+        # Parse and print response
+        response_str = response_data.decode("utf-8", errors="replace")
+        lines = response_str.split("\r\n", 1)
+        print(lines[0])
+        if len(lines) > 1:
+            print(lines[1])
+    finally:
+        sock.close()
 
 
 if __name__ == "__main__":
