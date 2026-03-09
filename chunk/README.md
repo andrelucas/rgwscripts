@@ -39,7 +39,7 @@ All test scripts and the driver accept:
 
 - `S3_SIZE_BYTES`
 - `S3_CHUNK_SIZE`
-- `S3_VERBOSE` (`1` or `0`, default: `1`)
+- `S3_VERBOSE` (`1` or `0`, default: `0`)
 
 Convenience aliases are also supported:
 

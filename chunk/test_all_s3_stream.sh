@@ -6,7 +6,7 @@ SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 
 : "${S3_SIZE_BYTES:=${SIZE_BYTES:-100000}}"
 : "${S3_CHUNK_SIZE:=${CHUNK_SIZE:-65536}}"
-: "${S3_VERBOSE:=${VERBOSE:-1}}"
+: "${S3_VERBOSE:=${VERBOSE:-0}}"
 
 export S3_SIZE_BYTES
 export S3_CHUNK_SIZE

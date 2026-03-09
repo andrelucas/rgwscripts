@@ -10,7 +10,7 @@ s3_test_env_init() {
 	: "${S3_KEY:=${default_key}}"
 	: "${S3_SIZE_BYTES:=${SIZE_BYTES:-100000}}"
 	: "${S3_CHUNK_SIZE:=${CHUNK_SIZE:-65536}}"
-	: "${S3_VERBOSE:=${VERBOSE:-1}}"
+	: "${S3_VERBOSE:=${VERBOSE:-0}}"
 	: "${S3_ENDPOINT:=http://$(hostname -f):8000}"
 
 	export AWS_ACCESS_KEY_ID
