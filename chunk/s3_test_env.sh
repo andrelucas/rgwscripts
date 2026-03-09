@@ -67,3 +67,27 @@ PY
 			;;
 	esac
 }
+
+s3_test_delete_object() {
+	python3 - "$S3_ENDPOINT" "$S3_REGION" "$S3_BUCKET" "$S3_KEY" <<'PY'
+import sys
+
+import boto3
+from botocore.config import Config
+
+endpoint, region, bucket, key = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
+
+s3 = boto3.client(
+	"s3",
+	endpoint_url=endpoint,
+	region_name=region,
+	config=Config(s3={"addressing_style": "virtual"}),
+)
+
+s3.delete_object(Bucket=bucket, Key=key)
+PY
+}
+
+s3_test_enable_object_cleanup() {
+	trap 'rc=$?; trap - EXIT; s3_test_delete_object || true; rm -f upload.bin; exit "$rc"' EXIT
+}

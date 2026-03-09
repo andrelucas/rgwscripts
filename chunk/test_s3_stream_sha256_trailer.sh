@@ -5,6 +5,7 @@ set -euo pipefail
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 source "${SCRIPT_DIR}/s3_test_env.sh"
 s3_test_env_init "obj-sha256"
+s3_test_enable_object_cleanup
 s3_test_preflight_bucket
 VERBOSE_ARG=$(s3_test_verbose_arg)
 
