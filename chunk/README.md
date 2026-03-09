@@ -2,11 +2,26 @@
 
 This workspace contains three upload test scripts and one driver script.
 
+I've found that it's not easy to reliably test individual streaming upload
+types (as opposed to multipart uploads), as boto seems to not support their
+direct use. Everywhere I looked, it seems that the general advice is to not
+rely on boto (or any other library) using a particular streaming type. 
+
+Since Handoff Authentication has special code to support streaming uploads we
+must be able test it. We simply can't rely on higher-level tests exercising
+these pathways.
+
+The streaming types are found in [Amazon's
+Docs](https://docs.aws.amazon.com/AmazonS3/latest/API/sigv4-auth-using-authorization-header.html).
+We don't support ECDSA because RGW doesn't support it at the time of writing.
+
 ## Test Scripts
 
-- `test_s3_stream_unsigned_trailer.sh` runs unsigned trailer chunked upload.
-- `test_s3_stream_sha256_trailer.sh` runs signed trailer chunked upload.
-- `test_s3_stream_sha256_payload.sh` runs signed payload chunked upload.
+| Script | x-amz-content-sha256 |
+| --- | --- |
+| `test_s3_stream_unsigned_trailer.sh` | `STREAMING-UNSIGNED-PAYLOAD-TRAILER` |
+| `test_s3_stream_sha256_trailer.sh` | `STREAMING-AWS4-HMAC-SHA256-PAYLOAD-TRAILER` |
+| `test_s3_stream_sha256_payload.sh` | `STREAMING-AWS4-HMAC-SHA256-PAYLOAD` |
 
 Each test performs post-upload verification of object size and SHA256.
 
