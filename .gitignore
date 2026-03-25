@@ -8,3 +8,8 @@ otel/collector-output.txt
 venv-*
 # Don't include the binary
 chunkupload/chunkupload
+
+# chunk/
+/chunk/*MiB
+/chunk/upload.bin
+/chunk/__pycache__/

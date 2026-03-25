@@ -1,6 +1,19 @@
 #!/bin/bash
 
-export AWS_ACCESS_KEY_ID=0555b35654ad1656d804
-export AWS_SECRET_ACCESS_KEY=h7GhxuBLTrlhVUyxSPUKUV8r/2EI4ngqJxD7iBdBYLhwluN30JaT3Q==
+set -euo pipefail
 
-./s3_stream_unsigned_trailer.py --endpoint http://$(hostname -f):8000 testnv us-east-1 obj 100000
+SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+source "${SCRIPT_DIR}/s3_test_env.sh"
+s3_test_env_init "obj"
+s3_test_enable_object_cleanup
+s3_test_preflight_bucket
+VERBOSE_ARG=$(s3_test_verbose_arg)
+
+./s3_stream_unsigned_trailer.py \
+	--endpoint "$S3_ENDPOINT" \
+	${VERBOSE_ARG:+$VERBOSE_ARG} \
+	--chunk-size "$S3_CHUNK_SIZE" \
+	"$S3_BUCKET" "$S3_REGION" "$S3_KEY" "$S3_SIZE_BYTES"
+
+python3 "${SCRIPT_DIR}/verify_s3_upload.py" \
+	"$S3_ENDPOINT" "$S3_REGION" "$S3_BUCKET" "$S3_KEY" "$S3_SIZE_BYTES"
