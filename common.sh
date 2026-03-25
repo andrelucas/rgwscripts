@@ -3,11 +3,8 @@
 # shellcheck shell=bash
 
 #epurl="http://127.0.0.1:8000"
-#epurl="http://amygdala-ub01.home.ae-35.com:8000"
-#epurl="http://amygdala-fe02.home.ae-35.com:8000"
-#epurl="http://ludwig-fe01.home.ae-35.com:8000"
-# epurl="http://atl1.objstore.dev:8000"
-epurl="http://ludwig-ub01.home.ae-35.com:8000"
+#epurl="http://atl1.objstore.dev:8000"
+epurl="http://$(hostname -f):8000"
 
 ## Use this for StoreQuery if talking to a real RGW instance you can directly
 ## access, i.e. not inside a remote k8s cluster.
