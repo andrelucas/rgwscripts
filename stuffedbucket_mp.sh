@@ -7,6 +7,7 @@ set -e
 
 abortonly=0
 count=100
+mpucount=10
 include_longkey=0
 maxjobs=200
 skip_abort=0
@@ -29,12 +30,13 @@ function usage() {
 }
 
 # Parse command-line options
-while getopts "Ab:c:j:lnV" opt; do
+while getopts "Ab:c:j:l:mnV" opt; do
     case $opt in
     A) abortonly=1 ;;
     c) count=$OPTARG ;;
     j) maxjobs=$OPTARG ;;
     l) include_longkey=1;;
+    m) mpucount=$OPTARG ;;
     n) skip_abort=1;;
     b) bucket=$OPTARG ;;
     V) versioning=1 ;;
@@ -45,7 +47,7 @@ while getopts "Ab:c:j:lnV" opt; do
     esac
 done
 
-export bucket bucketurl
+export bucket bucketurl mpucount
 
 # s3cmd rb $bucketurl || true
 s3cmd mb $bucketurl
@@ -73,7 +75,7 @@ export -f abort
 
 if [[ $skip_abort -eq 0 ]]; then
     # shellcheck disable=SC2086
-    echo "Aborting in-progress uploads"
+    echo "Aborting in-progress uploads to $bucket"
     parallel --link -j"$maxjobs" -n2 "abort {1} {2}" ::: $ids ::: $keys
 
     if [[ $abortonly -eq 1 ]]; then
@@ -97,10 +99,12 @@ fi
 
 function create() {
     n="$(printf "mp%08i\n" "$1")"
-    echo "Creating $n" >>/tmp/out
+    echo "Creating $n with $mpucount parts" >>/tmp/out
     id="$($awscmd s3api create-multipart-upload --bucket "$bucket" --key "$n" | jq -r .UploadId)"
-    echo "Uploading part 1 for $n id $id" >>/tmp/out
-    dd if=/dev/urandom bs=32 count=1 | $awscmd s3api upload-part --bucket "$bucket" --key "$n" --part-number 1 --upload-id "$id" --body smallfile
+    for i in $(seq 1 "$mpucount"); do
+        echo "Uploading part $i for $n id $id" >>/tmp/out
+        dd if=/dev/urandom bs=32 count=1 | $awscmd s3api upload-part --bucket "$bucket" --key "$n" --part-number $i --upload-id "$id" --body smallfile
+    done
 }
 export -f create
 
