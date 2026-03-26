@@ -5,6 +5,7 @@ squrl="${SQURL:-http://127.0.0.1:8000}"
 decode=0
 decode_token=0
 follow_nexttoken=0
+max_pages=0
 pretty=1
 
 function usage() {
@@ -16,12 +17,14 @@ Run a store query command against the specified path in the RGW.
 -b: (for objectlist and mpuploadlist) decode base64-encoded object keys in the output
 -c: use 'compact' (not pretty-printed) JSON output
 -f: (for objectlist and mpuploadlist) follow NextToken in the output
+-n <max_pages>: when following NextToken, stop after max_pages pages (default: no limit)
 -t: (for objectlist and mpuploadlist) decode base64-encoded NextToken in the output
 
 Example:
     $0 "ping foo" mybucket
     $0 "objectstatus" mybucket/mykey
     $0 -b "objectlist 100" mybucket
+    $0 -f -n 5 "mpuploadlist" mybucket
     
 The command must be quoted if it contains spaces.
 EOF
@@ -45,7 +48,7 @@ function error() {
 }
 
 # Parse options
-while getopts ":bcft" opt; do
+while getopts "bcfn:t" opt; do
   case $opt in
     b)
       decode=1
@@ -56,11 +59,14 @@ while getopts ":bcft" opt; do
     f)
       follow_nexttoken=1
       ;;
+    n)
+      max_pages="$OPTARG"
+      ;;
     t)
       decode_token=1
       ;;
     *)
-      echo "Usage: $0 [-b] \"<command>\" <path> [<path> ...]" >&2
+      echo "Usage: $0 [-bcft] [-n <max_pages>] \"<command>\" <path> [<path> ...]" >&2
       exit 1
       ;;
   esac
@@ -125,6 +131,17 @@ function ntdecode() {
 token=""
 prevtoken=""
 count=0
+remaining_pages="$max_pages"
+
+objlist_all="$tmpdir/objlist-all"
+objlist_uniq="$tmpdir/objlist-uniq"
+:>"$objlist_all"
+:>"$objlist_uniq"
+if [[ $cmd =~ ^(objectlist|mpuploadlist) ]]; then
+    wantobjcount=1
+else
+    wantobjcount=0
+fi
 
 while true; do
     outfile="$tmpdir/out.json"
@@ -135,13 +152,17 @@ while true; do
     run "$fullcmd" "$path" >"$outfile"
     count=$((count + 1))
     info "Command $count: '$fullcmd'"
-    cat "$outfile" | jq "${jqopts[@]}" "$jqscript" | ntdecode
+    jq "${jqopts[@]}" "$jqscript" "$outfile" | ntdecode
+    if [[ $wantobjcount -eq 1 ]]; then
+        # Save a list of objects for later.
+        jq -r '.Objects[] | .key' "$outfile" >>"$objlist_all"
+    fi
 
     if [[ $follow_nexttoken -eq 0 ]]; then
         break
     else
         prevtoken=$token
-        token=$(cat "$outfile" | jq -r 'if (.NextToken != null) then .NextToken else empty end')
+        token=$(jq -r 'if (.NextToken != null) then .NextToken else empty end' "$outfile")
         if [[ -n $token && $token = "$prevtoken" ]]; then
             error "NextToken did not change after $count commands, exiting to avoid loop."
         fi
@@ -149,6 +170,19 @@ while true; do
             break
         fi
     fi
+    # If max_pages <= 0, there's no limiter.
+    if [[ "$max_pages" -gt 0 ]]; then
+        remaining_pages=$((remaining_pages - 1))
+        if [[ $remaining_pages -le 0 ]]; then
+            info "Stopping pagination at page $max_pages"
+            break
+        fi
+    fi
 done
 
 info "Done. Ran $count command(s)."
+if [[ $wantobjcount -eq 1 ]]; then
+    info "Total objects listed: $(cat "$objlist_all" | wc -l)"
+    sort "$objlist_all" | uniq >"$objlist_uniq"
+    info "Unique objects listed: $(cat "$objlist_uniq" | wc -l)"
+fi
