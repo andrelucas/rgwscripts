@@ -16,7 +16,7 @@ fi
 
 function usage() {
     cat <<'EOF' >&2
-Usage: compare-mpuploadlist.sh [-f] [-l last_n] [-n max_pages] [-o output_dir] [-p page_size]... [-s] <bucket>
+Usage: compare-mpuploadlist.sh [-c context_n] [-f] [-n max_pages] [-o output_dir] [-p page_size]... [-s] <bucket>
 
 Compare StoreQuery `mpuploadlist` against `aws s3api list-multipart-uploads`
 for one bucket, with one or more page sizes.
@@ -25,8 +25,8 @@ AWS defines the page boundary for each comparison step: StoreQuery is asked
 for exactly the number of uploads AWS actually returned on that page.
 
 Options:
+  -c context_n   Show N entries of context before and after a divergence (default: 10)
   -f             Follow continuation tokens/markers after the first page
-  -l last_n      Show the last N returned uploads in first-difference diagnostics (default: 5)
   -n max_pages   When -f is used, stop after at most max_pages pages
   -o output_dir  Directory for captured JSON and diff artifacts
   -p page_size   Page size to test; repeat to try multiple sizes (default: 1000)
@@ -122,10 +122,198 @@ function format_decoded_entry_from_line() {
         "$(decode_b64_value "$upload_id_b64")"
 }
 
+function show_boundary_context() {
+    local sq_all_ids_file="$1"
+    local aws_all_ids_file="$2"
+    local summary_file="$3"
+    local sq_global_base="$4"
+    local aws_global_base="$5"
+    local context_size="$6"
+    local -a sq_all_lines aws_all_lines
+    local sq_all_len aws_all_len max_len boundary_idx start end i sq_line aws_line formatted
+
+    mapfile -t sq_all_lines <"$sq_all_ids_file"
+    mapfile -t aws_all_lines <"$aws_all_ids_file"
+    sq_all_len=${#sq_all_lines[@]}
+    aws_all_len=${#aws_all_lines[@]}
+    max_len=$sq_all_len
+    if (( aws_all_len > max_len )); then
+        max_len=$aws_all_len
+    fi
+
+    boundary_idx=$sq_global_base
+    if (( aws_global_base < boundary_idx )); then
+        boundary_idx=$aws_global_base
+    fi
+
+    start=$((boundary_idx - context_size))
+    if (( start < 0 )); then
+        start=0
+    fi
+    end=$((boundary_idx + context_size - 1))
+    if (( end >= max_len )); then
+        end=$((max_len - 1))
+    fi
+
+    warn "No value-level divergence is visible yet; showing context around the boundary before the failing page"
+    {
+        printf '*** CONTEXT AROUND CURRENT-PAGE BOUNDARY (boundary_idx=%s, context_before=%s, context_after=%s) ***\n' \
+            "$boundary_idx" "$context_size" "$context_size"
+
+        if (( start < boundary_idx )); then
+            printf '*** CONTEXT BEFORE CURRENT PAGE ***\n'
+            for ((i = start; i < boundary_idx; i++)); do
+                sq_line="${sq_all_lines[i]:-}"
+                aws_line="${aws_all_lines[i]:-}"
+                printf -v formatted '   sq_page_rel_idx=%d aws_page_rel_idx=%d sq_total_idx=%d aws_total_idx=%d | SQ %s || AWS %s' \
+                    "$((i - sq_global_base))" "$((i - aws_global_base))" "$i" "$i" \
+                    "$(format_decoded_entry_from_line "$sq_line")" \
+                    "$(format_decoded_entry_from_line "$aws_line")"
+                warn "$formatted"
+                printf '%s\n' "$formatted"
+            done
+        else
+            printf '*** CONTEXT BEFORE CURRENT PAGE: <none> ***\n'
+        fi
+
+        printf '*** START OF CURRENT PAGE ***\n'
+        if (( boundary_idx < max_len )); then
+            sq_line="${sq_all_lines[boundary_idx]:-}"
+            aws_line="${aws_all_lines[boundary_idx]:-}"
+            printf -v formatted '>> sq_page_rel_idx=%d aws_page_rel_idx=%d sq_total_idx=%d aws_total_idx=%d | SQ %s || AWS %s' \
+                "$((boundary_idx - sq_global_base))" "$((boundary_idx - aws_global_base))" "$boundary_idx" "$boundary_idx" \
+                "$(format_decoded_entry_from_line "$sq_line")" \
+                "$(format_decoded_entry_from_line "$aws_line")"
+            warn "$formatted"
+            printf '%s\n' "$formatted"
+        else
+            printf '>> <current page starts after the end of the accumulated value lists>\n'
+        fi
+
+        if (( boundary_idx < end )); then
+            printf '*** CONTEXT AFTER CURRENT PAGE START ***\n'
+            for ((i = boundary_idx + 1; i <= end; i++)); do
+                sq_line="${sq_all_lines[i]:-}"
+                aws_line="${aws_all_lines[i]:-}"
+                printf -v formatted '   sq_page_rel_idx=%d aws_page_rel_idx=%d sq_total_idx=%d aws_total_idx=%d | SQ %s || AWS %s' \
+                    "$((i - sq_global_base))" "$((i - aws_global_base))" "$i" "$i" \
+                    "$(format_decoded_entry_from_line "$sq_line")" \
+                    "$(format_decoded_entry_from_line "$aws_line")"
+                warn "$formatted"
+                printf '%s\n' "$formatted"
+            done
+        else
+            printf '*** CONTEXT AFTER CURRENT PAGE START: <none> ***\n'
+        fi
+    } >>"$summary_file"
+}
+
+function show_context_diff() {
+    local summary_file="$1"
+    local sq_global_base="$2"
+    local aws_global_base="$3"
+    local sq_all_ids_file="$4"
+    local aws_all_ids_file="$5"
+    local context_size="$6"
+    local -a sq_lines aws_lines
+    local sq_len aws_len max_len i sq_line aws_line diff_index start end
+
+    mapfile -t sq_lines <"$sq_all_ids_file"
+    mapfile -t aws_lines <"$aws_all_ids_file"
+    sq_len=${#sq_lines[@]}
+    aws_len=${#aws_lines[@]}
+    max_len=$sq_len
+    if (( aws_len > max_len )); then
+        max_len=$aws_len
+    fi
+
+    diff_index=-1
+    for ((i = 0; i < max_len; i++)); do
+        sq_line="${sq_lines[i]:-}"
+        aws_line="${aws_lines[i]:-}"
+        if [[ "$sq_line" != "$aws_line" ]]; then
+            diff_index=$i
+            break
+        fi
+    done
+
+    if (( diff_index < 0 )); then
+        printf '*** VALUE DIFF CONTEXT: <no value-level divergence in accumulated lists yet> ***\n' >>"$summary_file"
+        show_boundary_context "$sq_all_ids_file" "$aws_all_ids_file" "$summary_file" "$sq_global_base" "$aws_global_base" "$context_size"
+        return 0
+    fi
+
+    start=$((diff_index - context_size))
+    if (( start < 0 )); then
+        start=0
+    fi
+    end=$((diff_index + context_size))
+    if (( end >= max_len )); then
+        end=$((max_len - 1))
+    fi
+
+    warn "Context diff around first value divergence in the accumulated lists (10 lines before and after):"
+    {
+        printf '*** VALUE DIFF CONTEXT (ACCUMULATED LISTS, ZERO-BASED INDICES, context_before=%s, context_after=%s) ***\n' "$context_size" "$context_size"
+
+        if (( start < diff_index )); then
+            printf '*** CONTEXT BEFORE DIVERGENCE ***\n'
+            for ((i = start; i < diff_index; i++)); do
+                sq_line="${sq_lines[i]:-}"
+                aws_line="${aws_lines[i]:-}"
+                local sq_page_idx aws_page_idx formatted
+                sq_page_idx=$((i - sq_global_base))
+                aws_page_idx=$((i - aws_global_base))
+                printf -v formatted '   sq_page_idx=%d aws_page_idx=%d sq_total_idx=%d aws_total_idx=%d | SQ %s || AWS %s' \
+                    "$sq_page_idx" "$aws_page_idx" "$i" "$i" \
+                    "$(format_decoded_entry_from_line "$sq_line")" \
+                    "$(format_decoded_entry_from_line "$aws_line")"
+                warn "$formatted"
+                printf '%s\n' "$formatted"
+            done
+        else
+            printf '*** CONTEXT BEFORE DIVERGENCE: <none> ***\n'
+        fi
+
+        printf '*** DIVERGENCE ***\n'
+        sq_line="${sq_lines[diff_index]:-}"
+        aws_line="${aws_lines[diff_index]:-}"
+        local sq_page_idx aws_page_idx formatted
+        sq_page_idx=$((diff_index - sq_global_base))
+        aws_page_idx=$((diff_index - aws_global_base))
+        printf -v formatted '>> sq_page_idx=%d aws_page_idx=%d sq_total_idx=%d aws_total_idx=%d | SQ %s || AWS %s' \
+            "$sq_page_idx" "$aws_page_idx" "$diff_index" "$diff_index" \
+            "$(format_decoded_entry_from_line "$sq_line")" \
+            "$(format_decoded_entry_from_line "$aws_line")"
+        warn "$formatted"
+        printf '%s\n' "$formatted"
+
+        if (( diff_index < end )); then
+            printf '*** CONTEXT AFTER DIVERGENCE ***\n'
+            for ((i = diff_index + 1; i <= end; i++)); do
+                sq_line="${sq_lines[i]:-}"
+                aws_line="${aws_lines[i]:-}"
+                sq_page_idx=$((i - sq_global_base))
+                aws_page_idx=$((i - aws_global_base))
+                printf -v formatted '   sq_page_idx=%d aws_page_idx=%d sq_total_idx=%d aws_total_idx=%d | SQ %s || AWS %s' \
+                    "$sq_page_idx" "$aws_page_idx" "$i" "$i" \
+                    "$(format_decoded_entry_from_line "$sq_line")" \
+                    "$(format_decoded_entry_from_line "$aws_line")"
+                warn "$formatted"
+                printf '%s\n' "$formatted"
+            done
+        else
+            printf '*** CONTEXT AFTER DIVERGENCE: <none> ***\n'
+        fi
+    } >>"$summary_file"
+}
+
 function show_first_entry_difference() {
     local sq_ids_file="$1"
     local aws_ids_file="$2"
     local summary_file="$3"
+    local sq_all_ids_file="$4"
+    local aws_all_ids_file="$5"
     local -a sq_lines aws_lines
     local sq_len aws_len max_len i sq_line aws_line diff_index
 
@@ -149,8 +337,38 @@ function show_first_entry_difference() {
     done
 
     if (( diff_index == 0 )); then
-        warn "Unable to isolate a first differing entry position from the ordered page output"
-        printf '*** FIRST DIFFERING ENTRY POSITION: <not found> ***\n' >>"$summary_file"
+        local -a sq_all_lines aws_all_lines
+        local sq_all_len aws_all_len all_max_len all_diff_index
+        mapfile -t sq_all_lines <"$sq_all_ids_file"
+        mapfile -t aws_all_lines <"$aws_all_ids_file"
+        sq_all_len=${#sq_all_lines[@]}
+        aws_all_len=${#aws_all_lines[@]}
+        all_max_len=$sq_all_len
+        if (( aws_all_len > all_max_len )); then
+            all_max_len=$aws_all_len
+        fi
+        all_diff_index=-1
+        for ((i = 0; i < all_max_len; i++)); do
+            if [[ "${sq_all_lines[i]:-}" != "${aws_all_lines[i]:-}" ]]; then
+                all_diff_index=$i
+                break
+            fi
+        done
+
+        if (( all_diff_index >= 0 )); then
+            warn "No first differing entry was found in the current page, but the accumulated lists first differ at zero-based total index $all_diff_index"
+            warn "  StoreQuery: $(format_decoded_entry_from_line "${sq_all_lines[all_diff_index]:-}")"
+            warn "  AWS:        $(format_decoded_entry_from_line "${aws_all_lines[all_diff_index]:-}")"
+            {
+                printf '*** FIRST DIFFERING ENTRY POSITION: current_page=<not found> total_index=%s ***\n' "$all_diff_index"
+                printf '*** StoreQuery: %s ***\n' "$(format_decoded_entry_from_line "${sq_all_lines[all_diff_index]:-}")"
+                printf '*** AWS:        %s ***\n' "$(format_decoded_entry_from_line "${aws_all_lines[all_diff_index]:-}")"
+            } >>"$summary_file"
+            return 0
+        fi
+
+        warn "No value-level divergence exists yet in either the current page or the accumulated lists; failure is continuation-state-only so far"
+        printf '*** FIRST DIFFERING ENTRY POSITION: <no value-level divergence yet; continuation-state-only failure> ***\n' >>"$summary_file"
         return 0
     fi
 
@@ -165,50 +383,6 @@ function show_first_entry_difference() {
         printf '*** FIRST DIFFERING ENTRY POSITION (ZERO-BASED): sq_index=%s aws_index=%s ***\n' "$diff_index" "$diff_index"
         printf '*** StoreQuery: %s ***\n' "$(format_decoded_entry_from_line "$sq_line")"
         printf '*** AWS:        %s ***\n' "$(format_decoded_entry_from_line "$aws_line")"
-    } >>"$summary_file"
-}
-
-function write_tail_entries() {
-    local infile="$1"
-    local outfile="$2"
-    local label="$3"
-    local tail_count="$4"
-    local line_no=0
-
-    : >"$outfile"
-    while IFS=$'\t' read -r key_b64 upload_id_b64; do
-        line_no=$((line_no + 1))
-        printf '%s%02d key=%s | upload_id=%s\n' \
-            "$label" "$line_no" \
-            "$(decode_b64_value "$key_b64")" \
-            "$(decode_b64_value "$upload_id_b64")" \
-            >>"$outfile"
-    done < <(tail -n "$tail_count" "$infile")
-}
-
-function show_tail_comparison() {
-    local sq_ids_file="$1"
-    local aws_ids_file="$2"
-    local summary_file="$3"
-    local tail_count="$4"
-    local tail_dir
-    tail_dir="$(dirname "$summary_file")"
-    local sq_tail_file="$tail_dir/.first-diff-sq-tail"
-    local aws_tail_file="$tail_dir/.first-diff-aws-tail"
-    local compare_file="$tail_dir/.first-diff-tail-compare"
-
-    write_tail_entries "$sq_ids_file" "$sq_tail_file" 'SQ  ' "$tail_count"
-    write_tail_entries "$aws_ids_file" "$aws_tail_file" 'AWS ' "$tail_count"
-    paste -d $'\t' "$sq_tail_file" "$aws_tail_file" >"$compare_file"
-
-    warn "Last $tail_count returned uploads before/at first difference:"
-    while IFS= read -r line; do
-        warn "$line"
-    done <"$compare_file"
-
-    {
-        printf '*** LAST %s RETURNED UPLOADS (STOREQUERY vs AWS) ***\n' "$tail_count"
-        cat "$compare_file"
     } >>"$summary_file"
 }
 
@@ -234,17 +408,36 @@ function report_first_difference() {
     local summary_file="${19}"
     local sq_ids_file="${20}"
     local aws_ids_file="${21}"
-    local tail_count="${22}"
+    local context_size="${22}"
+    local sq_global_base="${23}"
+    local aws_global_base="${24}"
+    local sq_all_ids_file="${25}"
+    local aws_all_ids_file="${26}"
+    local sq_total_at_failure aws_total_at_failure
+
+    sq_total_at_failure="$(count_lines "$sq_all_ids_file")"
+    aws_total_at_failure="$(count_lines "$aws_all_ids_file")"
 
     warn "================================================================"
     warn "FIRST DIFFERENCE: page=$page page_size=$page_size status=$page_status"
     warn "Counts: sq_req=$sq_request_count sq=$sq_count aws=$aws_count missing_in_storequery=$missing_count extra_in_storequery=$extra_count"
-    warn "Request continuation used for this page:"
-    warn "  StoreQuery input token=${sq_input_token:-<none>} decoded=${sq_input_token_decoded:-<none>}"
-    warn "  AWS input key_marker=${aws_input_key_marker:-<none>} input upload_id_marker=${aws_input_upload_id_marker:-<none>}"
-    warn "StoreQuery continuation: token=${sq_nexttoken:-<none>} decoded=${sq_nexttoken_decoded:-<none>}"
-    warn "StoreQuery continuation fields: key=${sq_nexttoken_key:-<none>} uploadId=${sq_nexttoken_upload_id:-<none>}"
-    warn "AWS continuation: next_key_marker=${aws_next_key_marker:-<none>} next_upload_id_marker=${aws_next_upload_id_marker:-<none>}"
+    warn "Totals at failure: sq_total=$sq_total_at_failure aws_total=$aws_total_at_failure"
+    warn "FETCHED FAILING PAGE WITH:"
+    warn "  StoreQuery request token"
+    warn "    encoded : ${sq_input_token:-<none>}"
+    warn "    decoded : ${sq_input_token_decoded:-<none>}"
+    warn "  AWS request markers"
+    warn "    key-marker       : ${aws_input_key_marker:-<none>}"
+    warn "    upload-id-marker : ${aws_input_upload_id_marker:-<none>}"
+    warn "RETURNED AFTER FAILING PAGE:"
+    warn "  StoreQuery NextToken"
+    warn "    encoded : ${sq_nexttoken:-<none>}"
+    warn "    decoded : ${sq_nexttoken_decoded:-<none>}"
+    warn "    key     : ${sq_nexttoken_key:-<none>}"
+    warn "    uploadId: ${sq_nexttoken_upload_id:-<none>}"
+    warn "  AWS next markers"
+    warn "    key-marker       : ${aws_next_key_marker:-<none>}"
+    warn "    upload-id-marker : ${aws_next_upload_id_marker:-<none>}"
     warn "Artifacts: $summary_file"
     warn "================================================================"
 
@@ -252,20 +445,41 @@ function report_first_difference() {
         printf '*** FIRST DIFFERENCE DETECTED HERE ***\n'
         printf '*** page=%s page_size=%s status=%s sq_req=%s sq=%s aws=%s missing_in_storequery=%s extra_in_storequery=%s ***\n' \
             "$page" "$page_size" "$page_status" "$sq_request_count" "$sq_count" "$aws_count" "$missing_count" "$extra_count"
-        printf '*** sq_input_token=%s ***\n' "${sq_input_token:-<none>}"
-        printf '*** sq_input_token_decoded=%s ***\n' "${sq_input_token_decoded:-<none>}"
-        printf '*** aws_input_key_marker=%s ***\n' "${aws_input_key_marker:-<none>}"
-        printf '*** aws_input_upload_id_marker=%s ***\n' "${aws_input_upload_id_marker:-<none>}"
-        printf '*** storequery_nexttoken=%s ***\n' "${sq_nexttoken:-<none>}"
-        printf '*** storequery_nexttoken_decoded=%s ***\n' "${sq_nexttoken_decoded:-<none>}"
-        printf '*** storequery_nexttoken_key=%s ***\n' "${sq_nexttoken_key:-<none>}"
-        printf '*** storequery_nexttoken_uploadId=%s ***\n' "${sq_nexttoken_upload_id:-<none>}"
-        printf '*** aws_next_key_marker=%s ***\n' "${aws_next_key_marker:-<none>}"
-        printf '*** aws_next_upload_id_marker=%s ***\n' "${aws_next_upload_id_marker:-<none>}"
+        printf '*** TOTALS AT FAILURE: sq_total=%s aws_total=%s ***\n' "$sq_total_at_failure" "$aws_total_at_failure"
+        printf '*** FETCHED FAILING PAGE WITH ***\n'
+        printf '***   StoreQuery request token ***\n'
+        printf '***     encoded : %s ***\n' "${sq_input_token:-<none>}"
+        printf '***     decoded : %s ***\n' "${sq_input_token_decoded:-<none>}"
+        printf '***   AWS request markers ***\n'
+        printf '***     key-marker       : %s ***\n' "${aws_input_key_marker:-<none>}"
+        printf '***     upload-id-marker : %s ***\n' "${aws_input_upload_id_marker:-<none>}"
+        printf '*** RETURNED AFTER FAILING PAGE ***\n'
+        printf '***   StoreQuery NextToken ***\n'
+        printf '***     encoded : %s ***\n' "${sq_nexttoken:-<none>}"
+        printf '***     decoded : %s ***\n' "${sq_nexttoken_decoded:-<none>}"
+        printf '***     key     : %s ***\n' "${sq_nexttoken_key:-<none>}"
+        printf '***     uploadId: %s ***\n' "${sq_nexttoken_upload_id:-<none>}"
+        printf '***   AWS next markers ***\n'
+        printf '***     key-marker       : %s ***\n' "${aws_next_key_marker:-<none>}"
+        printf '***     upload-id-marker : %s ***\n' "${aws_next_upload_id_marker:-<none>}"
     } >>"$summary_file"
 
-    show_first_entry_difference "$sq_ids_file" "$aws_ids_file" "$summary_file"
-    show_tail_comparison "$sq_ids_file" "$aws_ids_file" "$summary_file" "$tail_count"
+    show_first_entry_difference "$sq_ids_file" "$aws_ids_file" "$summary_file" "$sq_all_ids_file" "$aws_all_ids_file"
+    show_context_diff "$summary_file" "$sq_global_base" "$aws_global_base" "$sq_all_ids_file" "$aws_all_ids_file" "$context_size"
+}
+
+function report_totals_at_failure() {
+    local summary_file="$1"
+    local sq_all_ids_file="$2"
+    local aws_all_ids_file="$3"
+    local sq_total_at_failure aws_total_at_failure
+
+    sq_total_at_failure="$(count_lines "$sq_all_ids_file")"
+    aws_total_at_failure="$(count_lines "$aws_all_ids_file")"
+
+    warn "Totals at failure: sq_total=$sq_total_at_failure aws_total=$aws_total_at_failure"
+    printf '*** TOTALS AT FAILURE: sq_total=%s aws_total=%s ***\n' \
+        "$sq_total_at_failure" "$aws_total_at_failure" >>"$summary_file"
 }
 
 function count_lines() {
@@ -326,6 +540,9 @@ function summarize_one_size() {
         sq_input_token_decoded="$(decode_storequery_token "$sq_input_token")"
         local aws_input_key_marker="$aws_key_marker"
         local aws_input_upload_id_marker="$aws_upload_id_marker"
+        local sq_page_global_base aws_page_global_base
+        sq_page_global_base="$(count_lines "$sq_all_ids")"
+        aws_page_global_base="$(count_lines "$aws_all_ids")"
 
         local -a aws_cmd=(
             aws
@@ -441,7 +658,7 @@ function summarize_one_size() {
             fi
         fi
         local continuation_marker_mismatch=0
-        if [[ -n "$sq_nexttoken" || -n "$aws_next_key_marker" || -n "$aws_next_upload_id_marker" ]]; then
+        if [[ -n "$sq_nexttoken" && ( -n "$aws_next_key_marker" || -n "$aws_next_upload_id_marker" ) ]]; then
             if [[ "$sq_nexttoken_key" != "$aws_next_key_marker" || "$sq_nexttoken_upload_id" != "$aws_next_upload_id_marker" ]]; then
                 continuation_marker_mismatch=1
                 if [[ "$page_status" == "MATCH" ]]; then
@@ -459,7 +676,9 @@ function summarize_one_size() {
                 "$sq_nexttoken" "$sq_nexttoken_decoded" \
                 "$sq_nexttoken_key" "$sq_nexttoken_upload_id" \
                 "$aws_next_key_marker" "$aws_next_upload_id_marker" \
-                "$summary_file" "$sq_ids" "$aws_ids" "$last_n"
+                "$summary_file" "$sq_ids" "$aws_ids" "$context_size" \
+                "$sq_page_global_base" "$aws_page_global_base" \
+                "$sq_all_ids" "$aws_all_ids"
         fi
 
         jq -n \
@@ -551,6 +770,7 @@ function summarize_one_size() {
         if [[ "$aws_has_more" -ne 1 ]]; then
             if [[ "$sq_has_more" -eq 1 ]]; then
                 warn "StoreQuery reports more pages after AWS was exhausted"
+                report_totals_at_failure "$summary_file" "$sq_all_ids" "$aws_all_ids"
                 printf '  StoreQuery reports more pages after AWS was exhausted\n' | tee -a "$summary_file"
                 return 1
             fi
@@ -558,6 +778,7 @@ function summarize_one_size() {
         fi
         if [[ "$sq_has_more" -ne 1 ]]; then
             warn "StoreQuery stopped paginating before AWS was exhausted"
+            report_totals_at_failure "$summary_file" "$sq_all_ids" "$aws_all_ids"
             printf '  StoreQuery stopped paginating before AWS was exhausted\n' | tee -a "$summary_file"
             return 1
         fi
@@ -571,6 +792,8 @@ function summarize_one_size() {
     local aws_unique_ids="$size_dir/aws.all.unique.ids"
     local overall_missing_ids="$size_dir/missing-in-storequery.ids"
     local overall_extra_ids="$size_dir/extra-in-storequery.ids"
+    ids_to_jsonl "$sq_all_ids" "$size_dir/storequery.all.jsonl"
+    ids_to_jsonl "$aws_all_ids" "$size_dir/aws.all.jsonl"
     sort -u "$sq_all_ids" >"$sq_unique_ids"
     sort -u "$aws_all_ids" >"$aws_unique_ids"
     comm -23 "$aws_unique_ids" "$sq_unique_ids" >"$overall_missing_ids"
@@ -608,24 +831,24 @@ if [[ ${1:-} == "-h" || ${1:-} == "--help" ]]; then
     exit 0
 fi
 
+context_size=10
 follow_pages=0
-last_n=5
 max_pages=""
 output_dir=""
 stop_on_first_diff=0
 declare -a page_sizes=()
 
-while getopts ":fhl:n:o:p:s" opt; do
+while getopts ":c:fhn:o:p:s" opt; do
     case "$opt" in
+        c)
+            context_size="$OPTARG"
+            ;;
         f)
             follow_pages=1
             ;;
         h)
             usage
             exit 0
-            ;;
-        l)
-            last_n="$OPTARG"
             ;;
         n)
             max_pages="$OPTARG"
@@ -671,8 +894,8 @@ done
 if [[ -n "$max_pages" ]] && { ! [[ "$max_pages" =~ ^[0-9]+$ ]] || (( max_pages < 1 )); }; then
     error "max_pages must be a positive integer."
 fi
-if ! [[ "$last_n" =~ ^[0-9]+$ ]] || (( last_n < 1 )); then
-    error "last_n must be a positive integer."
+if ! [[ "$context_size" =~ ^[0-9]+$ ]] || (( context_size < 1 )); then
+    error "context_size must be a positive integer."
 fi
 
 scriptdir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"

@@ -20,20 +20,20 @@ It also prints the exact commands it runs, so you can replay or inspect a failin
 ## Usage
 
 ```bash
-./compare-mpuploadlist.sh [-f] [-l last_n] [-n max_pages] [-o output_dir] [-p page_size]... [-s] <bucket>
+./compare-mpuploadlist.sh [-c context_n] [-f] [-n max_pages] [-o output_dir] [-p page_size]... [-s] <bucket>
 ```
 
 Options:
 
+- `-c context_n`: show `N` entries of context before and after a divergence
 - `-f`: follow continuation tokens and AWS markers past the first page
-- `-l last_n`: show the last `N` returned uploads in first-difference diagnostics
 - `-n max_pages`: when `-f` is active, stop after at most this many pages
 - `-o output_dir`: write artifacts into this directory instead of a temporary one
 - `-p page_size`: AWS max page size to test; repeat this option to test multiple sizes
 - `-s`: stop immediately on the first non-matching page and exit non-zero
 
 If `-p` is not provided, the script uses page size `1000`.
-If `-l` is not provided, the script shows the last `5` returned uploads in its first-difference comparison block.
+If `-c` is not provided, the script shows `10` entries of context before and after the divergence.
 
 Important: `-p` controls the AWS request size. StoreQuery does not blindly use the same number. Instead, StoreQuery is asked for the exact number of uploads AWS actually returned on each page, so the comparison is like-for-like even when AWS returns fewer records than requested.
 
@@ -63,10 +63,10 @@ Stop as soon as the first mismatch is found:
 ./compare-mpuploadlist.sh -f -s -p 100 mybucket
 ```
 
-Show a longer tail when a mismatch is found:
+Show a larger context window when a mismatch is found:
 
 ```bash
-./compare-mpuploadlist.sh -f -s -l 10 -p 100 mybucket
+./compare-mpuploadlist.sh -f -s -c 20 -p 100 mybucket
 ```
 
 ## Reading The Output
@@ -107,7 +107,8 @@ When a first difference is detected, the script also prints:
 - the first differing entry position in the ordered page output
 - the decoded StoreQuery entry at that position
 - the decoded AWS entry at that position
-- a decoded tail comparison showing the last `N` returned uploads from both sides
+- a context diff with zero-based current-page-relative indices and zero-based total indices
+- if values have not diverged yet, boundary context from just before and after the start of the failing page
 
 ## Artifact Layout
 
@@ -120,6 +121,8 @@ For each tested page size, the script creates a directory like:
 Important files inside:
 
 - `summary.txt`: page-by-page summary and final result
+- `storequery.all.jsonl`: complete decoded StoreQuery result stream for the run
+- `aws.all.jsonl`: complete decoded AWS result stream for the run
 - `page-0001.storequery.json`: raw StoreQuery response
 - `page-0001.aws.json`: raw AWS response
 - `page-0001.meta.json`: per-page token and marker metadata
